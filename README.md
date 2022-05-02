@@ -1,4 +1,4 @@
-# ORB-SLAM3
+# SuperORB-SLAM3
 
 //TODO: write installation instructions
 
