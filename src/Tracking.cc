@@ -1586,7 +1586,15 @@ Sophus::SE3f Tracking::GrabImageMonocular(const cv::Mat &im, const double &times
         if(mState==NOT_INITIALIZED || mState==NO_IMAGES_YET ||(lastID - initID) < mMaxFrames)
             mCurrentFrame = Frame(mImGray,timestamp,mpIniORBextractor,mpORBVocabulary,mpCamera,mDistCoef,mbf,mThDepth);
         else
+        {
             mCurrentFrame = Frame(mImGray,timestamp,mpORBextractorLeft,mpORBVocabulary,mpCamera,mDistCoef,mbf,mThDepth);
+            
+            ////////////////////////////////
+            // TEST SUPERPOINTS DETECTION //
+            ////////////////////////////////
+            TEST_EvaluateSuperpoints(mImGray);
+        }
+
     }
     else if(mSensor == System::IMU_MONOCULAR)
     {
@@ -1614,6 +1622,18 @@ Sophus::SE3f Tracking::GrabImageMonocular(const cv::Mat &im, const double &times
     return mCurrentFrame.GetPose();
 }
 
+void Tracking::TEST_EvaluateSuperpoints(const cv::InputArray &_image)
+{
+    std::vector<cv::KeyPoint> Keypoints;
+    cv::Mat Descriptors;
+    mpSystem->SPF->detect(_image, Keypoints, Descriptors);
+
+    // print some stats
+    cv::Size s = Descriptors.size();
+    int rows = s.height;
+    int cols = s.width;
+    printf("%s --> Keypoints founded: %lu\n, Descriptors founded: %d , Descriptors size: %d\n", __PRETTY_FUNCTION__, Keypoints.size(),rows, cols);
+}
 
 void Tracking::GrabImuData(const IMU::Point &imuMeasurement)
 {

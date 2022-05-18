@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(ORB_SLAM3)
 
-#set(TORCH_LIBRARIES  "/home/giuseppe/pytorch/build/lib/")             # libtorch
-#set(TORCH_INCLUDES   "/home/giuseppe/pytorch/torch/csrc/api/include")  # libtorch
-#set(TORCH_INCLUDES_2 "/home/giuseppe/pytorch/torch/lib/include/")      # libtorch
-
 ### LIBTORCH
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/libtorch")
 find_package(Torch REQUIRED QUIET)

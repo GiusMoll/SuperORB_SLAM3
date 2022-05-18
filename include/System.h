@@ -39,7 +39,7 @@
 #include "Viewer.h"
 #include "ImuTypes.h"
 #include "Settings.h"
-
+#include "SPDetector.hpp"
 
 namespace ORB_SLAM3
 {
@@ -185,6 +185,14 @@ public:
     void ChangeDataset();
 
     float GetImageScale();
+
+    //////////////////////
+    // TEST SUPERPOINTS //
+    //////////////////////
+    /** Superpoint Detector **/
+    const std::string weight_dir = "../Weights/superpoint.pt";
+    SuperPointSLAM::SPDetector* SPF;
+    // std::printf("VC created, SPDetector Constructed.\n");
 
 #ifdef REGISTER_TIMES
     void InsertRectTime(double& time);

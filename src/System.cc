@@ -21,6 +21,9 @@
 #include "System.h"
 #include "Converter.h"
 #include <thread>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <string>
 #include <pangolin/pangolin.h>
 #include <iomanip>
 #include <openssl/md5.h>
@@ -32,6 +35,11 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
+
+inline bool check_file_existance (const std::string& name) {
+  struct stat buffer;   
+  return (stat (name.c_str(), &buffer) == 0); 
+}
 
 namespace ORB_SLAM3
 {
@@ -238,6 +246,17 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 
     // Fix verbosity
     Verbose::SetTh(Verbose::VERBOSITY_QUIET);
+
+    //Initialize superpoints detector
+    if(check_file_existance (this->weight_dir))
+    {
+        this->SPF = new SuperPointSLAM::SPDetector(this->weight_dir, torch::cuda::is_available());
+    }
+    else
+    {
+        printf("File %s not found, cannot initialize Superpoint detector!\n",this->weight_dir);
+    }
+    
 
 }
 
