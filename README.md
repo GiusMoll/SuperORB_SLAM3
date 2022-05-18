@@ -1,3 +1,11 @@
+# SuperORB-SLAM3
+
+//TODO: write installation instructions
+
+git clone --recursive ...
+
+export ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH}:[PATH]/SuperORB_SLAM3/Examples_old/ROS
+
 # ORB-SLAM3
 
 ### V1.0, December 22th, 2021
