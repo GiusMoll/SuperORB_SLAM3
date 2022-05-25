@@ -80,7 +80,8 @@ int main(int argc, char **argv)
     int fps = 20;
     float dT = 1.f/fps;
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR, false);
+    
+    ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR, true); // true for visualization enabled
     float imageScale = SLAM.GetImageScale();
 
     double t_resize = 0.f;
@@ -96,12 +97,14 @@ int main(int argc, char **argv)
         {
 
             // Read image from file
+            // cout << vstrImageFilenames[seq][ni] << endl;
             im = cv::imread(vstrImageFilenames[seq][ni],cv::IMREAD_UNCHANGED); //,CV_LOAD_IMAGE_UNCHANGED);
+            // im = cv::imread("/home/giuseppe/Dataset/mav0/cam0/data/1403636579813555456.png"  ,cv::IMREAD_UNCHANGED); //,CV_LOAD_IMAGE_UNCHANGED);
             double tframe = vTimestampsCam[seq][ni];
 
             if(im.empty())
             {
-                cerr << endl << "Failed to load image at: "
+                cerr << "Failed to load image at: "
                      <<  vstrImageFilenames[seq][ni] << endl;
                 return 1;
             }
@@ -207,9 +210,13 @@ void LoadImages(const string &strImagePath, const string &strPathTimes,
                 vector<string> &vstrImages, vector<double> &vTimeStamps)
 {
     ifstream fTimes;
+    // int count=0;
     fTimes.open(strPathTimes.c_str());
     vTimeStamps.reserve(5000);
     vstrImages.reserve(5000);
+
+    // printf("INTO LOADIMAGES\n");
+
     while(!fTimes.eof())
     {
         string s;
@@ -223,6 +230,12 @@ void LoadImages(const string &strImagePath, const string &strPathTimes,
             ss >> t;
             vTimeStamps.push_back(t*1e-9);
 
+            // printf("INTO LOADIMAGES\n");
+
+            // count = count +1;
+            // cout << " Loaded" << strImagePath + "/" + ss.str() + ".png" << "ts " << t*1e-9 << endl;
+
         }
     }
+    // cout << count << " images loaded" << endl;
 }

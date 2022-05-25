@@ -1624,16 +1624,23 @@ Sophus::SE3f Tracking::GrabImageMonocular(const cv::Mat &im, const double &times
 
 void Tracking::TEST_EvaluateSuperpoints(const cv::InputArray &_image)
 {
-    std::vector<cv::KeyPoint> Keypoints;
-    cv::Mat Descriptors;
-    mpSystem->SPF->detect(_image, Keypoints, Descriptors);
+    if(mpSystem->SPF != nullptr)
+    {
+        std::vector<cv::KeyPoint> Keypoints;
+        cv::Mat Descriptors;
+        mpSystem->SPF->detect(_image, Keypoints, Descriptors);
 
-    // print some stats
-    cv::Size s = Descriptors.size();
-    int rows = s.height;
-    int cols = s.width;
-    printf("%s --> Keypoints founded: %lu\n, Descriptors founded: %d , Descriptors size: %d\n", __PRETTY_FUNCTION__, Keypoints.size(),rows, cols);
-}
+        // print some stats
+        cv::Size s = Descriptors.size();
+        int rows = s.height;
+        int cols = s.width;
+        cout << __PRETTY_FUNCTION__  << "--> Keypoints founded: " << Keypoints.size() << ", Descriptors founded: " << rows << ", Descriptors size: " << cols << endl;
+    }
+    else
+    {
+        cout << __PRETTY_FUNCTION__ << "--> Trying to detect superpoints but superpoint detector is not initialized!" << endl;       
+    }
+}   
 
 void Tracking::GrabImuData(const IMU::Point &imuMeasurement)
 {

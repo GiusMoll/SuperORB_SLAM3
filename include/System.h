@@ -190,7 +190,7 @@ public:
     // TEST SUPERPOINTS //
     //////////////////////
     /** Superpoint Detector **/
-    const std::string weight_dir = "../Weights/superpoint.pt";
+    const std::string weight_dir = "/home/giuseppe/SuperORB_SLAM3/Weights/superpoint.pt";
     SuperPointSLAM::SPDetector* SPF;
     // std::printf("VC created, SPDetector Constructed.\n");
 
