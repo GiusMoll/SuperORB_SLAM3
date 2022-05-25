@@ -27,6 +27,9 @@
 
 #include<stdint-gcc.h>
 
+#define ENABLE_CHECK_ORIENTATION
+#define USE_ORBFEATURES
+
 using namespace std;
 
 namespace ORB_SLAM3
@@ -334,7 +337,7 @@ namespace ORB_SLAM3
                                     (!pKF->mpCamera2) ? pKF->mvKeysUn[realIdxKF] :
                                     (realIdxKF >= pKF -> NLeft) ? pKF -> mvKeysRight[realIdxKF - pKF -> NLeft]
                                                                 : pKF -> mvKeys[realIdxKF];
-
+#ifdef ENABLE_CHECK_ORIENTATION
                             if(mbCheckOrientation)
                             {
                                 cv::KeyPoint &Fkp =
@@ -351,6 +354,7 @@ namespace ORB_SLAM3
                                 assert(bin>=0 && bin<HISTO_LENGTH);
                                 rotHist[bin].push_back(bestIdxF);
                             }
+#endif
                             nmatches++;
                         }
 
@@ -364,7 +368,7 @@ namespace ORB_SLAM3
                                         (!pKF->mpCamera2) ? pKF->mvKeysUn[realIdxKF] :
                                         (realIdxKF >= pKF -> NLeft) ? pKF -> mvKeysRight[realIdxKF - pKF -> NLeft]
                                                                     : pKF -> mvKeys[realIdxKF];
-
+#ifdef ENABLE_CHECK_ORIENTATION
                                 if(mbCheckOrientation)
                                 {
                                     cv::KeyPoint &Fkp =
@@ -381,6 +385,7 @@ namespace ORB_SLAM3
                                     assert(bin>=0 && bin<HISTO_LENGTH);
                                     rotHist[bin].push_back(bestIdxFR);
                                 }
+#endif
                                 nmatches++;
                             }
                         }
@@ -400,7 +405,7 @@ namespace ORB_SLAM3
                 Fit = F.mFeatVec.lower_bound(KFit->first);
             }
         }
-
+#ifdef ENABLE_CHECK_ORIENTATION
         if(mbCheckOrientation)
         {
             int ind1=-1;
@@ -420,7 +425,7 @@ namespace ORB_SLAM3
                 }
             }
         }
-
+#endif
         return nmatches;
     }
 
@@ -712,7 +717,7 @@ namespace ORB_SLAM3
                     vnMatches21[bestIdx2]=i1;
                     vMatchedDistance[bestIdx2]=bestDist;
                     nmatches++;
-
+#ifdef ENABLE_CHECK_ORIENTATION
                     if(mbCheckOrientation)
                     {
                         float rot = F1.mvKeysUn[i1].angle-F2.mvKeysUn[bestIdx2].angle;
@@ -724,11 +729,12 @@ namespace ORB_SLAM3
                         assert(bin>=0 && bin<HISTO_LENGTH);
                         rotHist[bin].push_back(i1);
                     }
+#endif
                 }
             }
 
         }
-
+#ifdef ENABLE_CHECK_ORIENTATION
         if(mbCheckOrientation)
         {
             int ind1=-1;
@@ -753,7 +759,7 @@ namespace ORB_SLAM3
             }
 
         }
-
+#endif
         //Update prev matched
         for(size_t i1=0, iend1=vnMatches12.size(); i1<iend1; i1++)
             if(vnMatches12[i1]>=0)
@@ -880,7 +886,7 @@ namespace ORB_SLAM3
                 f2it = vFeatVec2.lower_bound(f1it->first);
             }
         }
-
+#ifdef ENABLE_CHECK_ORIENTATION
         if(mbCheckOrientation)
         {
             int ind1=-1;
@@ -900,7 +906,7 @@ namespace ORB_SLAM3
                 }
             }
         }
-
+#endif
         return nmatches;
     }
 
@@ -1110,7 +1116,7 @@ namespace ORB_SLAM3
                 f2it = vFeatVec2.lower_bound(f1it->first);
             }
         }
-
+#ifdef ENABLE_CHECK_ORIENTATION
         if(mbCheckOrientation)
         {
             int ind1=-1;
@@ -1131,6 +1137,7 @@ namespace ORB_SLAM3
             }
 
         }
+#endif
 
         vMatchedPairs.clear();
         vMatchedPairs.reserve(nmatches);
@@ -1771,7 +1778,7 @@ namespace ORB_SLAM3
                     {
                         CurrentFrame.mvpMapPoints[bestIdx2]=pMP;
                         nmatches++;
-
+#ifdef ENABLE_CHECK_ORIENTATION
                         if(mbCheckOrientation)
                         {
                             cv::KeyPoint kpLF = (LastFrame.Nleft == -1) ? LastFrame.mvKeysUn[i]
@@ -1790,6 +1797,7 @@ namespace ORB_SLAM3
                             assert(bin>=0 && bin<HISTO_LENGTH);
                             rotHist[bin].push_back(bestIdx2);
                         }
+#endif 
                     }
                     if(CurrentFrame.Nleft != -1){
                         Eigen::Vector3f x3Dr = CurrentFrame.GetRelativePoseTrl() * x3Dc;
@@ -1837,6 +1845,7 @@ namespace ORB_SLAM3
                         {
                             CurrentFrame.mvpMapPoints[bestIdx2 + CurrentFrame.Nleft]=pMP;
                             nmatches++;
+#ifdef ENABLE_CHECK_ORIENTATION
                             if(mbCheckOrientation)
                             {
                                 cv::KeyPoint kpLF = (LastFrame.Nleft == -1) ? LastFrame.mvKeysUn[i]
@@ -1854,6 +1863,7 @@ namespace ORB_SLAM3
                                 assert(bin>=0 && bin<HISTO_LENGTH);
                                 rotHist[bin].push_back(bestIdx2  + CurrentFrame.Nleft);
                             }
+#endif
                         }
 
                     }
@@ -1862,6 +1872,7 @@ namespace ORB_SLAM3
         }
 
         //Apply rotation consistency
+#ifdef ENABLE_CHECK_ORIENTATION
         if(mbCheckOrientation)
         {
             int ind1=-1;
@@ -1882,7 +1893,7 @@ namespace ORB_SLAM3
                 }
             }
         }
-
+#endif
         return nmatches;
     }
 
@@ -1967,7 +1978,7 @@ namespace ORB_SLAM3
                     {
                         CurrentFrame.mvpMapPoints[bestIdx2]=pMP;
                         nmatches++;
-
+#ifdef ENABLE_CHECK_ORIENTATION
                         if(mbCheckOrientation)
                         {
                             float rot = pKF->mvKeysUn[i].angle-CurrentFrame.mvKeysUn[bestIdx2].angle;
@@ -1979,12 +1990,13 @@ namespace ORB_SLAM3
                             assert(bin>=0 && bin<HISTO_LENGTH);
                             rotHist[bin].push_back(bestIdx2);
                         }
+#endif
                     }
 
                 }
             }
         }
-
+#ifdef ENABLE_CHECK_ORIENTATION
         if(mbCheckOrientation)
         {
             int ind1=-1;
@@ -2005,7 +2017,7 @@ namespace ORB_SLAM3
                 }
             }
         }
-
+#endif
         return nmatches;
     }
 
@@ -2057,6 +2069,7 @@ namespace ORB_SLAM3
 // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
     int ORBmatcher::DescriptorDistance(const cv::Mat &a, const cv::Mat &b)
     {
+#ifdef USE_ORBFEATURES
         const int *pa = a.ptr<int32_t>();
         const int *pb = b.ptr<int32_t>();
 
@@ -2069,7 +2082,11 @@ namespace ORB_SLAM3
             v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
             dist += (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
         }
+#else
 
+        float dist = (float)cv::norm(a, b, cv::NORM_L2);
+
+#endif
         return dist;
     }
 

@@ -1592,7 +1592,7 @@ Sophus::SE3f Tracking::GrabImageMonocular(const cv::Mat &im, const double &times
             ////////////////////////////////
             // TEST SUPERPOINTS DETECTION //
             ////////////////////////////////
-            TEST_EvaluateSuperpoints(mImGray);
+            // TEST_EvaluateSuperpoints(mImGray);
         }
 
     }
