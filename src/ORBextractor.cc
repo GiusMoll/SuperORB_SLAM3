@@ -65,7 +65,7 @@
 using namespace cv;
 using namespace std;
 
-#define USE_ORBFEATURES
+
 
 namespace ORB_SLAM3
 {
@@ -409,7 +409,7 @@ namespace ORB_SLAM3
             };
 
     ORBextractor::ORBextractor(int _nfeatures, float _scaleFactor, int _nlevels,
-                               int _iniThFAST, int _minThFAST):
+                               float _iniThFAST, float _minThFAST):
             nfeatures(_nfeatures), scaleFactor(_scaleFactor), nlevels(_nlevels),
             iniThFAST(_iniThFAST), minThFAST(_minThFAST)
     {
@@ -474,9 +474,15 @@ namespace ORB_SLAM3
 
 #else
 
-        model = make_shared<SuperPoint>();
-        torch::load(model, "superpoint.pt");
-
+        std::cout << "Initializing Superpoint detector... \n" ;
+        this->model = new SuperPointSLAM::SPDetector(this->weight_dir, torch::cuda::is_available());
+        // model_SP = make_shared<SuperPointSLAM::SuperPoint>();
+        // torch::load(model_SP, this->weight_dir);
+        if(torch::cuda::is_available())
+       {
+        std::cout << " Running with CUDA!!!" << std::endl;
+       }
+        std::cout << " ...COMPLETED!!!" << std::endl;
 
         mvScaleFactor.resize(nlevels);
         mvLevelSigma2.resize(nlevels);
@@ -824,9 +830,14 @@ namespace ORB_SLAM3
 
         return vResultKeys;
     }
-
+#ifdef USE_ORBFEATURES
     void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoints)
     {
+#else
+    void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoints, cv::Mat &_desc)
+    {
+#endif
+
 #ifdef USE_ORBFEATURES
         allKeypoints.resize(nlevels);
 
@@ -950,10 +961,13 @@ namespace ORB_SLAM3
 
         const float W = 30;
 
+        DBG_PRINTF("%s\n", __PRETTY_FUNCTION__);
+
         for (int level = 0; level < nlevels; ++level)
         {
-            SPDetector detector(model);
-            detector.detect(mvImagePyramid[level], false);
+            // SuperPointSLAM::SPDetector detector(model_SP);
+            // detector.detect(mvImagePyramid[level], false);
+            this->model->detect(mvImagePyramid[level], false);
 
             const int minBorderX = EDGE_THRESHOLD-3;
             const int minBorderY = minBorderX;
@@ -990,16 +1004,21 @@ namespace ORB_SLAM3
                     if(maxX>maxBorderX)
                         maxX = maxBorderX;
 
+                    // std::cout << "iniThFAST: " << iniThFAST << "minThFAST: " << minThFAST << std::endl;
                     vector<cv::KeyPoint> vKeysCell;
                     // FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
                     //      vKeysCell,iniThFAST,true);
-                    detector.getKeyPoints(iniThFAST, iniX, maxX, iniY, maxY, vKeysCell, true);
+                    this->model->getKeyPoints(iniThFAST, iniX, maxX, iniY, maxY, vKeysCell, true);
+                    // detector.getKeyPoints(iniThFAST, iniX, maxX, iniY, maxY, vKeysCell, true);
+                    // printf("vKeysCell size: %lu", vKeysCell.size());
+
 
                     if(vKeysCell.empty())
                     {
                         // FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
                         //      vKeysCell,minThFAST,true);
-                        detector.getKeyPoints(minThFAST, iniX, maxX, iniY, maxY, vKeysCell, true);
+                        this->model->getKeyPoints(minThFAST, iniX, maxX, iniY, maxY, vKeysCell, true);                        
+                        // detector.getKeyPoints(minThFAST, iniX, maxX, iniY, maxY, vKeysCell, true);
                     }
 
                     if(!vKeysCell.empty())
@@ -1034,9 +1053,12 @@ namespace ORB_SLAM3
             }
 
             cv::Mat desc;
-            detector.computeDescriptors(keypoints, desc);
+            this->model->computeDescriptors(keypoints, desc);
+            // detector.computeDescriptors(keypoints, desc);
             vDesc.push_back(desc);
         }
+
+        DBG_PRINTF("%s, vDesc size: %d, _desc width: %d, _desc height: %d\n", __PRETTY_FUNCTION__, vDesc.size(), _desc.cols, _desc.rows);
 
         cv::vconcat(vDesc, _desc);
 
@@ -1240,7 +1262,7 @@ namespace ORB_SLAM3
                                   OutputArray _descriptors, std::vector<int> &vLappingArea)
     {
 
-        int monoIndex = 0;
+        DBG_PRINTF("%s\n", __PRETTY_FUNCTION__);
 
 #ifdef USE_ORBFEATURES
 
@@ -1276,6 +1298,7 @@ namespace ORB_SLAM3
         _keypoints = vector<cv::KeyPoint>(nkeypoints);
 
         int offset = 0;
+        int monoIndex = 0, stereoIndex = nkeypoints-1;
         //Modified for speeding up stereo fisheye matching
         int stereoIndex = nkeypoints-1;
         for (int level = 0; level < nlevels; ++level)
@@ -1326,7 +1349,10 @@ namespace ORB_SLAM3
 #else
 
         if(_image.empty())
-            return;
+        {
+            printf("WARNING: empty image!!!\n");
+            return -1;
+        }
 
         Mat image = _image.getMat();
         assert(image.type() == CV_8UC1 );
@@ -1337,9 +1363,10 @@ namespace ORB_SLAM3
         ComputePyramid(image);
 
         vector < vector<KeyPoint> > allKeypoints;
+        // Mat desc = cv::Mat(nkeypointsLevel, 32, CV_8U);
         ComputeKeyPointsOctTree(allKeypoints, descriptors);
-        cout << descriptors.rows << endl;
-
+        //cout << descriptors.rows << endl;
+        DBG_PRINTF("descriptors size: %d, %d \n", descriptors.rows, descriptors.cols);
 
         int nkeypoints = 0;
         for (int level = 0; level < nlevels; ++level)
@@ -1351,11 +1378,12 @@ namespace ORB_SLAM3
             _descriptors.create(nkeypoints, 256, CV_32F);
             descriptors.copyTo(_descriptors.getMat());
         }
-
+        
         _keypoints.clear();
         _keypoints.reserve(nkeypoints);
 
         int offset = 0;
+        int monoIndex = 0, stereoIndex = nkeypoints-1;
         for (int level = 0; level < nlevels; ++level)
         {
             vector<KeyPoint>& keypoints = allKeypoints[level];
@@ -1382,8 +1410,32 @@ namespace ORB_SLAM3
                     keypointEnd = keypoints.end(); keypoint != keypointEnd; ++keypoint)
                     keypoint->pt *= scale;
             }
-            // And add the keypoints to the output
-            _keypoints.insert(_keypoints.end(), keypoints.begin(), keypoints.end());
+
+            if(1)
+            {
+                // And add the keypoints to the output
+                _keypoints.insert(_keypoints.end(), keypoints.begin(), keypoints.end());
+
+                // cout << "[ORBextractor]: level-" << level << " extracted " << _keypoints.size() << " KeyPoints" << endl; 
+            }
+            else
+            {
+                int i = 0;
+                for (vector<KeyPoint>::iterator keypoint = keypoints.begin(),
+                     keypointEnd = keypoints.end(); keypoint != keypointEnd; ++keypoint){
+
+                    if(keypoint->pt.x >= vLappingArea[0] && keypoint->pt.x <= vLappingArea[1]){
+                        _keypoints.at(stereoIndex) = (*keypoint);
+                        // desc.row(i).copyTo(descriptors.row(stereoIndex));
+                        stereoIndex--;
+                    }
+                    else{
+                        _keypoints.at(monoIndex) = (*keypoint);
+                        // desc.row(i).copyTo(descriptors.row(monoIndex));
+                        monoIndex++;
+                    }
+                }
+            }
         }
 
 #endif

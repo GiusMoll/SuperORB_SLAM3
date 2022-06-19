@@ -77,4 +77,49 @@ void SuperPoint::forward(torch::Tensor& x, torch::Tensor& Prob, torch::Tensor& D
     Desc = desc;    // [B, 256, H/8, W/8]
 }
 
+std::vector<torch::Tensor> SuperPoint::forward(torch::Tensor x) {
+
+    x = torch::relu(conv1a->forward(x));
+    x = torch::relu(conv1b->forward(x));
+    x = torch::max_pool2d(x, 2, 2);
+
+    x = torch::relu(conv2a->forward(x));
+    x = torch::relu(conv2b->forward(x));
+    x = torch::max_pool2d(x, 2, 2);
+
+    x = torch::relu(conv3a->forward(x));
+    x = torch::relu(conv3b->forward(x));
+    x = torch::max_pool2d(x, 2, 2);
+
+    x = torch::relu(conv4a->forward(x));
+    x = torch::relu(conv4b->forward(x));
+
+    auto cPa = torch::relu(convPa->forward(x));
+    auto semi = convPb->forward(cPa);  // [B, 65, H/8, W/8]
+
+    auto cDa = torch::relu(convDa->forward(x));
+    auto desc = convDb->forward(cDa);  // [B, d1, H/8, W/8]
+
+    auto dn = torch::norm(desc, 2, 1);
+    desc = desc.div(torch::unsqueeze(dn, 1));
+
+    semi = torch::softmax(semi, 1);
+    semi = semi.slice(1, 0, 64);
+    semi = semi.permute({0, 2, 3, 1});  // [B, H/8, W/8, 64]
+
+
+    int Hc = semi.size(1);
+    int Wc = semi.size(2);
+    semi = semi.contiguous().view({-1, Hc, Wc, 8, 8});
+    semi = semi.permute({0, 1, 3, 2, 4});
+    semi = semi.contiguous().view({-1, Hc * 8, Wc * 8});  // [B, H, W]
+
+
+    std::vector<torch::Tensor> ret;
+    ret.push_back(semi);
+    ret.push_back(desc);
+
+    return ret;
+  }
+
 } // Namespace NAMU_TEST END

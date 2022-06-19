@@ -51,6 +51,8 @@ public:
      */
     void forward(torch::Tensor& x, torch::Tensor& Prob, torch::Tensor& Desc);
 
+    std::vector<torch::Tensor> forward(torch::Tensor x);
+
 protected:
     //SHARED ENCODER
     Conv2d conv1a{nullptr};

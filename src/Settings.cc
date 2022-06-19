@@ -446,8 +446,8 @@ namespace ORB_SLAM3 {
         nFeatures_ = readParameter<int>(fSettings,"ORBextractor.nFeatures",found);
         scaleFactor_ = readParameter<float>(fSettings,"ORBextractor.scaleFactor",found);
         nLevels_ = readParameter<int>(fSettings,"ORBextractor.nLevels",found);
-        initThFAST_ = readParameter<int>(fSettings,"ORBextractor.iniThFAST",found);
-        minThFAST_ = readParameter<int>(fSettings,"ORBextractor.minThFAST",found);
+        initThFAST_ = readParameter<float>(fSettings,"ORBextractor.iniThFAST",found);
+        minThFAST_ = readParameter<float>(fSettings,"ORBextractor.minThFAST",found);
     }
 
     void Settings::readViewer(cv::FileStorage &fSettings) {

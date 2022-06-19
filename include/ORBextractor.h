@@ -22,7 +22,8 @@
 #include <vector>
 #include <list>
 #include <opencv2/opencv.hpp>
-
+#include "SPDetector.hpp"
+#include "Defs.h"
 
 namespace ORB_SLAM3
 {
@@ -47,7 +48,7 @@ public:
     enum {HARRIS_SCORE=0, FAST_SCORE=1 };
 
     ORBextractor(int nfeatures, float scaleFactor, int nlevels,
-                 int iniThFAST, int minThFAST);
+                 float iniThFAST, float minThFAST);
 
     ~ORBextractor(){}
 
@@ -85,18 +86,22 @@ public:
 protected:
 
     void ComputePyramid(cv::Mat image);
-    void ComputeKeyPointsOctTree(std::vector<std::vector<cv::KeyPoint> >& allKeypoints);    
+    //void ComputeKeyPointsOctTree(std::vector<std::vector<cv::KeyPoint> >& allKeypoints);    
     std::vector<cv::KeyPoint> DistributeOctTree(const std::vector<cv::KeyPoint>& vToDistributeKeys, const int &minX,
                                            const int &maxX, const int &minY, const int &maxY, const int &nFeatures, const int &level);
+#ifdef USE_ORBFEATURES
+    void ComputeKeyPointsOctTree(std::vector<std::vector<cv::KeyPoint> >& allKeypoints);
+#else
+    void ComputeKeyPointsOctTree(std::vector<std::vector<cv::KeyPoint> >& allKeypoints, cv::Mat &_desc);
+#endif
 
-    void ComputeKeyPointsOld(std::vector<std::vector<cv::KeyPoint> >& allKeypoints);
     std::vector<cv::Point> pattern;
 
     int nfeatures;
     double scaleFactor;
     int nlevels;
-    int iniThFAST;
-    int minThFAST;
+    float iniThFAST;
+    float minThFAST;
 
     std::vector<int> mnFeaturesPerLevel;
 
@@ -106,6 +111,11 @@ protected:
     std::vector<float> mvInvScaleFactor;    
     std::vector<float> mvLevelSigma2;
     std::vector<float> mvInvLevelSigma2;
+
+    const std::string weight_dir = "/home/giuseppe/SuperORB_SLAM3/Weights/superpoint.pt";
+    SuperPointSLAM::SPDetector* model;
+    // std::shared_ptr<SuperPointSLAM::SuperPoint> model_SP;
+
 };
 
 } //namespace ORB_SLAM

@@ -32,6 +32,7 @@ public:
      * @param _use_cuda whether the model operates in cpu or gpu.
      */
     SPDetector(std::string _weight_dir, bool _use_cuda);
+    // SPDetector(std::shared_ptr<SuperPoint::SuperPoint> _model) : model(_model){};
     
     ~SPDetector(){}
 
@@ -43,6 +44,11 @@ public:
      */
     void detect(cv::InputArray _image, std::vector<cv::KeyPoint>& _keypoints,
                       cv::Mat &_descriptors);
+
+
+    void detect(const cv::Mat &image, bool cuda);
+    void getKeyPoints(float threshold, int iniX, int maxX, int iniY, int maxY, std::vector<cv::KeyPoint> &keypoints, bool nms);
+    void computeDescriptors(const std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors);
 
     int n_keypoints;
 

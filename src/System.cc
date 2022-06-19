@@ -123,6 +123,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         cout << endl << "Loading ORB Vocabulary. This could take a while..." << endl;
 
         mpVocabulary = new ORBVocabulary();
+// #ifdef USE_ORBFEATURES
         bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
         if(!bVocLoad)
         {
@@ -131,6 +132,11 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
             exit(-1);
         }
         cout << "Vocabulary loaded!" << endl << endl;
+// #else
+//        cout << "Using superpoint features!" << endl << endl;
+//        mpVocabulary->load(strVocFile); 
+//        cout << "Vocabulary loaded!" << endl << endl;
+// #endif
 
         //Create KeyFrame Database
         mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
@@ -248,16 +254,16 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     Verbose::SetTh(Verbose::VERBOSITY_QUIET);
 
     //Initialize superpoints detector
-    if(check_file_existance (this->weight_dir))
-    // if(1)
-    {
-        cout << "Initializing Superpoints Detector!" << endl;
-        this->SPF = new SuperPointSLAM::SPDetector(this->weight_dir, torch::cuda::is_available());
-    }
-    else
-    {
-        cout << "File " << this->weight_dir << " not found, cannot initialize Superpoint detector!\n";
-    }
+    // if(check_file_existance (this->weight_dir))
+    // // if(1)
+    // {
+    //     cout << "Initializing Superpoints Detector!" << endl;
+    //     this->SPF = new SuperPointSLAM::SPDetector(this->weight_dir, torch::cuda::is_available());
+    // }
+    // else
+    // {
+    //     cout << "File " << this->weight_dir << " not found, cannot initialize Superpoint detector!\n";
+    // }
     
 
 }

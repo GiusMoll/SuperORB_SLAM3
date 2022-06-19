@@ -123,6 +123,8 @@ include/SerializationUtils.h
 include/Config.h
 include/Settings.h
 
+include/Defs.h
+
 src/SPDetector.cpp
 src/SuperPoint.cpp
 include/SPDetector.hpp

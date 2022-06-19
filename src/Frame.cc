@@ -419,7 +419,11 @@ void Frame::ExtractORB(int flag, const cv::Mat &im, const int x0, const int x1)
 {
     vector<int> vLapping = {x0,x1};
     if(flag==0)
+    {
         monoLeft = (*mpORBextractorLeft)(im,cv::Mat(),mvKeys,mDescriptors,vLapping);
+        cout << "desc size: " << mDescriptors.rows << ' ' << mDescriptors.cols << endl;
+        cout << "mvKeys size: " << mvKeys.size() << endl;
+    }
     else
         monoRight = (*mpORBextractorRight)(im,cv::Mat(),mvKeysRight,mDescriptorsRight,vLapping);
 }
@@ -430,6 +434,8 @@ bool Frame::isSet() const {
 
 void Frame::SetPose(const Sophus::SE3<float> &Tcw) {
     mTcw = Tcw;
+
+    // std::cout << "------------" << "\n"  << Tcw.matrix() << "\n" << "------------" << std::endl;
 
     UpdatePoseMatrices();
     mbIsSet = true;

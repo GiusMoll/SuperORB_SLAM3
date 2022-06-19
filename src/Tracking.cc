@@ -588,8 +588,8 @@ void Tracking::newParameterLoader(Settings *settings) {
     //ORB parameters
     int nFeatures = settings->nFeatures();
     int nLevels = settings->nLevels();
-    int fIniThFAST = settings->initThFAST();
-    int fMinThFAST = settings->minThFAST();
+    float fIniThFAST = settings->initThFAST();
+    float fMinThFAST = settings->minThFAST();
     float fScaleFactor = settings->scaleFactor();
 
     mpORBextractorLeft = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
@@ -1217,7 +1217,8 @@ bool Tracking::ParseCamParamFile(cv::FileStorage &fSettings)
 bool Tracking::ParseORBParamFile(cv::FileStorage &fSettings)
 {
     bool b_miss_params = false;
-    int nFeatures, nLevels, fIniThFAST, fMinThFAST;
+    int nFeatures, nLevels;
+    float fIniThFAST, fMinThFAST;
     float fScaleFactor;
 
     cv::FileNode node = fSettings["ORBextractor.nFeatures"];
@@ -1254,9 +1255,9 @@ bool Tracking::ParseORBParamFile(cv::FileStorage &fSettings)
     }
 
     node = fSettings["ORBextractor.iniThFAST"];
-    if(!node.empty() && node.isInt())
+    if(!node.empty() && node.isReal())
     {
-        fIniThFAST = node.operator int();
+        fIniThFAST = node.real();
     }
     else
     {
@@ -1265,9 +1266,9 @@ bool Tracking::ParseORBParamFile(cv::FileStorage &fSettings)
     }
 
     node = fSettings["ORBextractor.minThFAST"];
-    if(!node.empty() && node.isInt())
+    if(!node.empty() && node.isReal())
     {
-        fMinThFAST = node.operator int();
+        fMinThFAST = node.real();
     }
     else
     {
@@ -1624,22 +1625,22 @@ Sophus::SE3f Tracking::GrabImageMonocular(const cv::Mat &im, const double &times
 
 void Tracking::TEST_EvaluateSuperpoints(const cv::InputArray &_image)
 {
-    if(mpSystem->SPF != nullptr)
-    {
-        std::vector<cv::KeyPoint> Keypoints;
-        cv::Mat Descriptors;
-        mpSystem->SPF->detect(_image, Keypoints, Descriptors);
+    // if(mpSystem->SPF != nullptr)
+    // {
+    //     std::vector<cv::KeyPoint> Keypoints;
+    //     cv::Mat Descriptors;
+    //     mpSystem->SPF->detect(_image, Keypoints, Descriptors);
 
-        // print some stats
-        cv::Size s = Descriptors.size();
-        int rows = s.height;
-        int cols = s.width;
-        cout << __PRETTY_FUNCTION__  << "--> Keypoints founded: " << Keypoints.size() << ", Descriptors founded: " << rows << ", Descriptors size: " << cols << endl;
-    }
-    else
-    {
-        cout << __PRETTY_FUNCTION__ << "--> Trying to detect superpoints but superpoint detector is not initialized!" << endl;       
-    }
+    //     // print some stats
+    //     cv::Size s = Descriptors.size();
+    //     int rows = s.height;
+    //     int cols = s.width;
+    //     cout << __PRETTY_FUNCTION__  << "--> Keypoints founded: " << Keypoints.size() << ", Descriptors founded: " << rows << ", Descriptors size: " << cols << endl;
+    // }
+    // else
+    // {
+    //     cout << __PRETTY_FUNCTION__ << "--> Trying to detect superpoints but superpoint detector is not initialized!" << endl;       
+    // }
 }   
 
 void Tracking::GrabImuData(const IMU::Point &imuMeasurement)
@@ -1971,14 +1972,17 @@ void Tracking::Track()
 
                 if((!mbVelocity && !pCurrentMap->isImuInitialized()) || mCurrentFrame.mnId<mnLastRelocFrameId+2)
                 {
+                    std::cout << "TRACK: Track with respect to the reference KF " << std::endl;
                     Verbose::PrintMess("TRACK: Track with respect to the reference KF ", Verbose::VERBOSITY_DEBUG);
                     bOK = TrackReferenceKeyFrame();
                 }
                 else
                 {
+                    std::cout << "TRACK: Track with motion model" << std::endl;
                     Verbose::PrintMess("TRACK: Track with motion model", Verbose::VERBOSITY_DEBUG);
                     bOK = TrackWithMotionModel();
                     if(!bOK)
+                        printf("TRACK: Track with motion model FAILED, try tracking with reference keyframe\n");
                         bOK = TrackReferenceKeyFrame();
                 }
 
@@ -1988,11 +1992,12 @@ void Tracking::Track()
                     if ( mCurrentFrame.mnId<=(mnLastRelocFrameId+mnFramesToResetIMU) &&
                          (mSensor==System::IMU_MONOCULAR || mSensor==System::IMU_STEREO || mSensor == System::IMU_RGBD))
                     {
+                        std::cout << "STATE LOST!!! !bOK" << std::endl;
                         mState = LOST;
                     }
                     else if(pCurrentMap->KeyFramesInMap()>10)
                     {
-                        // cout << "KF in map: " << pCurrentMap->KeyFramesInMap() << endl;
+                        cout << "KF in map: " << pCurrentMap->KeyFramesInMap() << endl;
                         mState = RECENTLY_LOST;
                         mTimeStampLost = mCurrentFrame.mTimeStamp;
                     }
@@ -2076,10 +2081,12 @@ void Tracking::Track()
                     // In last frame we tracked enough MapPoints in the map
                     if(mbVelocity)
                     {
+                        printf("mbVelocity is true!\n");
                         bOK = TrackWithMotionModel();
                     }
                     else
                     {
+                        printf("mbVelocity is false!\n");
                         bOK = TrackReferenceKeyFrame();
                     }
                 }

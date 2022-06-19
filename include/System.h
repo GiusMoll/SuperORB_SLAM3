@@ -40,6 +40,8 @@
 #include "ImuTypes.h"
 #include "Settings.h"
 #include "SPDetector.hpp"
+#include "Defs.h"
+
 
 namespace ORB_SLAM3
 {
@@ -190,8 +192,8 @@ public:
     // TEST SUPERPOINTS //
     //////////////////////
     /** Superpoint Detector **/
-    const std::string weight_dir = "/home/giuseppe/SuperORB_SLAM3/Weights/superpoint.pt";
-    SuperPointSLAM::SPDetector* SPF;
+    // const std::string weight_dir = "/home/giuseppe/SuperORB_SLAM3/Weights/superpoint.pt";
+    // SuperPointSLAM::SPDetector* SPF;
     // std::printf("VC created, SPDetector Constructed.\n");
 
 #ifdef REGISTER_TIMES

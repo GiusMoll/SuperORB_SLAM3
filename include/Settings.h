@@ -204,7 +204,7 @@ namespace ORB_SLAM3 {
         int nFeatures_;
         float scaleFactor_;
         int nLevels_;
-        int initThFAST_, minThFAST_;
+        float initThFAST_, minThFAST_;
 
         /*
          * Viewer stuff
