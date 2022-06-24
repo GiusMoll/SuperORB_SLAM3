@@ -20,10 +20,17 @@
 #ifndef FRAME_H
 #define FRAME_H
 
+#include "Defs.h"
 #include<vector>
 
-#include "Thirdparty/DBoW2/DBoW2/BowVector.h"
-#include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
+#ifdef USE_DBOW2
+    #include "Thirdparty/DBoW2/DBoW2/BowVector.h"
+    #include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
+#else
+    #include "Thirdparty/DBow3/src/BowVector.h"
+    #include "Thirdparty/DBow3/src/FeatureVector.h"
+#endif
+
 
 #include "Thirdparty/Sophus/sophus/geometry.hpp"
 
@@ -38,6 +45,8 @@
 
 #include "Eigen/Core"
 #include "sophus/se3.hpp"
+
+using namespace std;
 
 namespace ORB_SLAM3
 {
@@ -235,8 +244,13 @@ public:
     std::vector<float> mvDepth;
 
     // Bag of Words Vector structures.
-    DBoW2::BowVector mBowVec;
-    DBoW2::FeatureVector mFeatVec;
+    #ifdef USE_DBOW2
+        DBoW2::BowVector mBowVec;
+        DBoW2::FeatureVector mFeatVec;
+    #else 
+        DBoW3::BowVector mBowVec;
+        DBoW3::FeatureVector mFeatVec;
+    #endif 
 
     // ORB descriptor, each row associated to a keypoint.
     cv::Mat mDescriptors, mDescriptorsRight;

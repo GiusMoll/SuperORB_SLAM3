@@ -16,11 +16,14 @@
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
-
+#include "Defs.h"
 #include "KeyFrameDatabase.h"
-
 #include "KeyFrame.h"
-#include "Thirdparty/DBoW2/DBoW2/BowVector.h"
+#ifdef USE_DBOW2
+    #include "Thirdparty/DBoW2/DBoW2/BowVector.h"
+#else
+    #include "Thirdparty/DBow3/src/BowVector.h"
+#endif
 
 #include<mutex>
 
@@ -40,7 +43,12 @@ void KeyFrameDatabase::add(KeyFrame *pKF)
 {
     unique_lock<mutex> lock(mMutex);
 
-    for(DBoW2::BowVector::const_iterator vit= pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit!=vend; vit++)
+
+#ifdef USE_DBOW2
+    for(DBoW2::BowVector::const_iterator vit= pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit!=vend; vit++)      
+#else 
+    for(DBoW3::BowVector::const_iterator vit= pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit!=vend; vit++)      
+#endif
         mvInvertedFile[vit->first].push_back(pKF);
 }
 
@@ -49,7 +57,11 @@ void KeyFrameDatabase::erase(KeyFrame* pKF)
     unique_lock<mutex> lock(mMutex);
 
     // Erase elements in the Inverse File for the entry
+#ifdef USE_DBOW2
     for(DBoW2::BowVector::const_iterator vit=pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit!=vend; vit++)
+#else
+    for(DBoW3::BowVector::const_iterator vit=pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit!=vend; vit++)
+#endif
     {
         // List of keyframes that share the word
         list<KeyFrame*> &lKFs =   mvInvertedFile[vit->first];
@@ -106,8 +118,11 @@ vector<KeyFrame*> KeyFrameDatabase::DetectLoopCandidates(KeyFrame* pKF, float mi
     // Discard keyframes connected to the query keyframe
     {
         unique_lock<mutex> lock(mMutex);
-
+#ifdef USE_DBOW2
         for(DBoW2::BowVector::const_iterator vit=pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit != vend; vit++)
+#else
+        for(DBoW3::BowVector::const_iterator vit=pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit != vend; vit++)
+#endif
         {
             list<KeyFrame*> &lKFs =   mvInvertedFile[vit->first];
 
@@ -234,8 +249,12 @@ void KeyFrameDatabase::DetectCandidates(KeyFrame* pKF, float minScore,vector<Key
     // Discard keyframes connected to the query keyframe
     {
         unique_lock<mutex> lock(mMutex);
-
+#ifdef USE_DBOW2
         for(DBoW2::BowVector::const_iterator vit=pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit != vend; vit++)
+#else
+        for(DBoW3::BowVector::const_iterator vit=pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit != vend; vit++)
+#endif
+
         {
             list<KeyFrame*> &lKFs = mvInvertedFile[vit->first];
 
@@ -450,8 +469,11 @@ void KeyFrameDatabase::DetectCandidates(KeyFrame* pKF, float minScore,vector<Key
         }
 
     }
-
+#ifdef USE_DBOW2
     for(DBoW2::BowVector::const_iterator vit=pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit != vend; vit++)
+#else
+    for(DBoW3::BowVector::const_iterator vit=pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit != vend; vit++)
+#endif 
     {
         list<KeyFrame*> &lKFs = mvInvertedFile[vit->first];
 
@@ -475,8 +497,11 @@ void KeyFrameDatabase::DetectBestCandidates(KeyFrame *pKF, vector<KeyFrame*> &vp
         unique_lock<mutex> lock(mMutex);
 
         spConnectedKF = pKF->GetConnectedKeyFrames();
-
+#ifdef USE_DBOW2
         for(DBoW2::BowVector::const_iterator vit=pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit != vend; vit++)
+#else
+        for(DBoW3::BowVector::const_iterator vit=pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit != vend; vit++)
+#endif 
         {
             list<KeyFrame*> &lKFs =   mvInvertedFile[vit->first];
 
@@ -611,8 +636,11 @@ void KeyFrameDatabase::DetectNBestCandidates(KeyFrame *pKF, vector<KeyFrame*> &v
         unique_lock<mutex> lock(mMutex);
 
         spConnectedKF = pKF->GetConnectedKeyFrames();
-
+#ifdef USE_DBOW2
         for(DBoW2::BowVector::const_iterator vit=pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit != vend; vit++)
+#else
+        for(DBoW3::BowVector::const_iterator vit=pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit != vend; vit++)
+#endif 
         {
             list<KeyFrame*> &lKFs =   mvInvertedFile[vit->first];
 
@@ -737,8 +765,11 @@ vector<KeyFrame*> KeyFrameDatabase::DetectRelocalizationCandidates(Frame *F, Map
     // Search all keyframes that share a word with current frame
     {
         unique_lock<mutex> lock(mMutex);
-
+#ifdef USE_DBOW2
         for(DBoW2::BowVector::const_iterator vit=F->mBowVec.begin(), vend=F->mBowVec.end(); vit != vend; vit++)
+#else
+        for(DBoW3::BowVector::const_iterator vit=F->mBowVec.begin(), vend=F->mBowVec.end(); vit != vend; vit++)
+#endif
         {
             list<KeyFrame*> &lKFs =   mvInvertedFile[vit->first];
 

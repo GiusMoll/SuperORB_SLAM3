@@ -6,6 +6,15 @@ cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 make -j
 
+cd ../../DBow3
+
+echo "Configuring and building Thirdparty/DBoW3 ..."
+
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j
+
 cd ../../DBoW2
 
 echo "Configuring and building Thirdparty/DBoW2 ..."

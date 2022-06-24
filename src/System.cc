@@ -17,7 +17,7 @@
 */
 
 
-
+#include "Defs.h"
 #include "System.h"
 #include "Converter.h"
 #include <thread>
@@ -123,7 +123,9 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         cout << endl << "Loading ORB Vocabulary. This could take a while..." << endl;
 
         mpVocabulary = new ORBVocabulary();
-// #ifdef USE_ORBFEATURES
+
+#ifdef USE_DBOW2
+
         bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
         if(!bVocLoad)
         {
@@ -132,11 +134,20 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
             exit(-1);
         }
         cout << "Vocabulary loaded!" << endl << endl;
-// #else
-//        cout << "Using superpoint features!" << endl << endl;
-//        mpVocabulary->load(strVocFile); 
-//        cout << "Vocabulary loaded!" << endl << endl;
-// #endif
+
+#else
+
+        try{
+            cout << "!!!LOADING VOCABULARY!!!" << endl << endl;
+            mpVocabulary->load(strVocFile);
+            cout << "!!!LOADED!!!" << endl << endl;
+        }catch(std::exception &ex){
+            cerr<<ex.what()<<endl;
+        }
+
+#endif
+
+        cout << "Vocabulary loaded, creating KeyFrameDatabase! " << endl;
 
         //Create KeyFrame Database
         mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
@@ -151,6 +162,9 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         cout << endl << "Loading ORB Vocabulary. This could take a while..." << endl;
 
         mpVocabulary = new ORBVocabulary();
+
+#ifdef USE_DBOW2
+
         bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
         if(!bVocLoad)
         {
@@ -158,7 +172,18 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
             cerr << "Falied to open at: " << strVocFile << endl;
             exit(-1);
         }
-        cout << "Vocabulary loaded!" << endl << endl;
+        
+#else 
+
+        try{
+            mpVocabulary->load(strVocFile);
+        }catch(std::exception &ex){
+            cerr<<ex.what()<<endl;
+        }
+
+#endif
+
+        cout << "Vocabulary loaded, creating KeyFrameDatabase!" << endl << endl;
 
         //Create KeyFrame Database
         mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);

@@ -52,6 +52,8 @@
 #include "MapPoint.h"
 #include "Frame.h"
 
+#include "Thirdparty/DBoW2/DUtils/Random.h"
+
 #include<Eigen/Dense>
 #include<Eigen/Sparse>
 

@@ -20,9 +20,19 @@
 #ifndef KEYFRAME_H
 #define KEYFRAME_H
 
+#include "Defs.h"
 #include "MapPoint.h"
-#include "Thirdparty/DBoW2/DBoW2/BowVector.h"
-#include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
+
+
+#ifdef USE_DBOW2
+    #include "Thirdparty/DBoW2/DBoW2/BowVector.h"
+    #include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
+#else
+    #include "Thirdparty/DBow3/src/BowVector.h"
+    #include "Thirdparty/DBow3/src/FeatureVector.h"
+#endif
+
+
 #include "ORBVocabulary.h"
 #include "ORBextractor.h"
 #include "Frame.h"
@@ -385,8 +395,14 @@ public:
     const cv::Mat mDescriptors;
 
     //BoW
-    DBoW2::BowVector mBowVec;
-    DBoW2::FeatureVector mFeatVec;
+    #ifdef USE_DBOW2   
+        DBoW2::BowVector mBowVec;
+        DBoW2::FeatureVector mFeatVec;
+    #else
+        DBoW3::BowVector mBowVec;
+        DBoW3::FeatureVector mFeatVec;
+    #endif  
+ 
 
     // Pose relative to parent (this is computed when bad flag is activated)
     Sophus::SE3f mTcp;

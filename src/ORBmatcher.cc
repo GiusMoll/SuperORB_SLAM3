@@ -16,14 +16,21 @@
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
-
+#include "Defs.h"
 #include "ORBmatcher.h"
 
 #include<limits.h>
 
 #include<opencv2/core/core.hpp>
 
-#include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
+
+#ifdef USE_DBOW2
+    #include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
+#else
+// namespace DBoW = DBoW2; //alias for namespace
+    #include "Thirdparty/DBow3/src/FeatureVector.h"
+// namespace DBoW = DBow3; //alias for namespace
+#endif
 
 #include<stdint-gcc.h>
 
@@ -232,7 +239,11 @@ namespace ORB_SLAM3
 
         vpMapPointMatches = vector<MapPoint*>(F.N,static_cast<MapPoint*>(NULL));
 
+#ifdef USE_DBOW2
         const DBoW2::FeatureVector &vFeatVecKF = pKF->mFeatVec;
+#else
+        const DBoW3::FeatureVector &vFeatVecKF = pKF->mFeatVec;
+#endif
 
         int nmatches=0;
 
@@ -242,10 +253,17 @@ namespace ORB_SLAM3
         const float factor = 1.0f/HISTO_LENGTH;
 
         // We perform the matching over ORB that belong to the same vocabulary node (at a certain level)
+ #ifdef USE_DBOW2
         DBoW2::FeatureVector::const_iterator KFit = vFeatVecKF.begin();
         DBoW2::FeatureVector::const_iterator Fit = F.mFeatVec.begin();
         DBoW2::FeatureVector::const_iterator KFend = vFeatVecKF.end();
-        DBoW2::FeatureVector::const_iterator Fend = F.mFeatVec.end();
+        DBoW2::FeatureVector::const_iterator Fend = F.mFeatVec.end(); 
+#else
+        DBoW3::FeatureVector::const_iterator KFit = vFeatVecKF.begin();
+        DBoW3::FeatureVector::const_iterator Fit = F.mFeatVec.begin();
+        DBoW3::FeatureVector::const_iterator KFend = vFeatVecKF.end();
+        DBoW3::FeatureVector::const_iterator Fend = F.mFeatVec.end(); 
+#endif 
 
         while(KFit != KFend && Fit != Fend)
         {
@@ -782,12 +800,21 @@ namespace ORB_SLAM3
     {
         printf("%s \n", __PRETTY_FUNCTION__);
         const vector<cv::KeyPoint> &vKeysUn1 = pKF1->mvKeysUn;
+#ifdef USE_DBOW2
         const DBoW2::FeatureVector &vFeatVec1 = pKF1->mFeatVec;
+#else
+        const DBoW3::FeatureVector &vFeatVec1 = pKF1->mFeatVec;
+#endif 
         const vector<MapPoint*> vpMapPoints1 = pKF1->GetMapPointMatches();
         const cv::Mat &Descriptors1 = pKF1->mDescriptors;
 
         const vector<cv::KeyPoint> &vKeysUn2 = pKF2->mvKeysUn;
+#ifdef USE_DBOW2
         const DBoW2::FeatureVector &vFeatVec2 = pKF2->mFeatVec;
+#else
+        const DBoW3::FeatureVector &vFeatVec2 = pKF2->mFeatVec;
+#endif 
+
         const vector<MapPoint*> vpMapPoints2 = pKF2->GetMapPointMatches();
         const cv::Mat &Descriptors2 = pKF2->mDescriptors;
 
@@ -802,11 +829,17 @@ namespace ORB_SLAM3
 
         int nmatches = 0;
 
+#ifdef USE_DBOW2
         DBoW2::FeatureVector::const_iterator f1it = vFeatVec1.begin();
         DBoW2::FeatureVector::const_iterator f2it = vFeatVec2.begin();
         DBoW2::FeatureVector::const_iterator f1end = vFeatVec1.end();
         DBoW2::FeatureVector::const_iterator f2end = vFeatVec2.end();
-
+#else
+        DBoW3::FeatureVector::const_iterator f1it = vFeatVec1.begin();
+        DBoW3::FeatureVector::const_iterator f2it = vFeatVec2.begin();
+        DBoW3::FeatureVector::const_iterator f1end = vFeatVec1.end();
+        DBoW3::FeatureVector::const_iterator f2end = vFeatVec2.end();
+#endif 
         while(f1it != f1end && f2it != f2end)
         {
             if(f1it->first == f2it->first)
@@ -927,8 +960,13 @@ namespace ORB_SLAM3
                                            vector<pair<size_t, size_t> > &vMatchedPairs, const bool bOnlyStereo, const bool bCoarse)
     {
         printf("%s \n", __PRETTY_FUNCTION__);
+        #ifdef USE_DBOW2
         const DBoW2::FeatureVector &vFeatVec1 = pKF1->mFeatVec;
         const DBoW2::FeatureVector &vFeatVec2 = pKF2->mFeatVec;
+        #else
+        const DBoW3::FeatureVector &vFeatVec1 = pKF1->mFeatVec;
+        const DBoW3::FeatureVector &vFeatVec2 = pKF2->mFeatVec;
+        #endif  
 
         //Compute epipole in second image
         Sophus::SE3f T1w = pKF1->GetPose();
@@ -975,10 +1013,19 @@ namespace ORB_SLAM3
 
         const float factor = 1.0f/HISTO_LENGTH;
 
+        #ifdef USE_DBOW2
         DBoW2::FeatureVector::const_iterator f1it = vFeatVec1.begin();
         DBoW2::FeatureVector::const_iterator f2it = vFeatVec2.begin();
         DBoW2::FeatureVector::const_iterator f1end = vFeatVec1.end();
         DBoW2::FeatureVector::const_iterator f2end = vFeatVec2.end();
+        #else
+        DBoW3::FeatureVector::const_iterator f1it = vFeatVec1.begin();
+        DBoW3::FeatureVector::const_iterator f2it = vFeatVec2.begin();
+        DBoW3::FeatureVector::const_iterator f1end = vFeatVec1.end();
+        DBoW3::FeatureVector::const_iterator f2end = vFeatVec2.end();
+        #endif
+
+        auto tic = std::chrono::system_clock::now();
 
         while(f1it!=f1end && f2it!=f2end)
         {
@@ -1130,6 +1177,12 @@ namespace ORB_SLAM3
                 f2it = vFeatVec2.lower_bound(f1it->first);
             }
         }
+
+        auto toc = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = tic-toc;
+
+        std::cout << "matching time" << elapsed_seconds.count() << std::endl;
+
 #ifdef ENABLE_CHECK_ORIENTATION
         if(mbCheckOrientation)
         {
