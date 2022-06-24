@@ -3,7 +3,7 @@
 
 // DBoW3
 #include "DBoW3.h"
-#include "timers.h"
+#include "DBowTimers.h"
 // OpenCV
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
