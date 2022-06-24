@@ -1,3 +1,6 @@
 [submodule "Thirdparty/Pangolin"]
 	path = Thirdparty/Pangolin
 	url = https://github.com/stevenlovegrove/Pangolin.git
+[submodule "Thirdparty/DBow3"]
+	path = Thirdparty/DBow3
+	url = https://github.com/rmsalinas/DBow3.git
