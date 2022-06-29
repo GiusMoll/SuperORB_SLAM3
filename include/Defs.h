@@ -7,7 +7,8 @@
 #endif
 
 // #define USE_DBOW2
- 
+// #define USE_BINARY_DESCRIPTORS 
+#define DBOW_LEVELS 0
 
 
 

@@ -17,7 +17,7 @@
 */
 
 #include "Frame.h"
-
+#include "Defs.h"
 #include "G2oTypes.h"
 #include "MapPoint.h"
 #include "KeyFrame.h"
@@ -746,8 +746,11 @@ void Frame::ComputeBoW()
     if(mBowVec.empty())
     {
         vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptors);
-        // mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,4);
-        mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,0);
+        mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,DBOW_LEVELS);
+        
+        // mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,3);
+        printf("%s Frame - Extracted %d BOW FEATURES \n", __PRETTY_FUNCTION__, mBowVec.size());
+        printf("vCurrentDesc %d, mBowVec %d, mFeatVec %d\n",vCurrentDesc.size() ,mBowVec.size() ,mFeatVec.size() );
     }
 }
 

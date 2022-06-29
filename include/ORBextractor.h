@@ -95,6 +95,8 @@ protected:
     void ComputeKeyPointsOctTree(std::vector<std::vector<cv::KeyPoint> >& allKeypoints, cv::Mat &_desc);
 #endif
 
+    void convert_descriptors_to_binary(cv::Mat &desc, bool is_in_1_0);
+
     std::vector<cv::Point> pattern;
 
     int nfeatures;

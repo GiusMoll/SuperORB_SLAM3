@@ -1054,6 +1054,9 @@ namespace ORB_SLAM3
 
             cv::Mat desc;
             this->model->computeDescriptors(keypoints, desc);
+        #ifdef USE_BINARY_DESCRIPTORS 
+            convert_descriptors_to_binary(desc, false);
+        #endif 
             // detector.computeDescriptors(keypoints, desc);
             vDesc.push_back(desc);
         }
@@ -1070,6 +1073,54 @@ namespace ORB_SLAM3
 
     }
 
+    void ORBextractor::convert_descriptors_to_binary(cv::Mat &desc, bool is_in_1_0)
+    {
+        int channels = desc.channels();
+        int nRows = desc.rows;
+        int nCols = desc.cols * channels;
+
+        double minVal; 
+        double maxVal; 
+        Point minLoc; 
+        Point maxLoc;
+
+        if(!is_in_1_0)
+        {
+            cv::minMaxLoc( desc, &minVal, &maxVal, &minLoc, &maxLoc );
+        }
+
+        if(desc.isContinuous())
+        {
+            nCols *= nRows;
+            nRows = 1;
+        }
+
+        int i,j;
+        uchar* p;
+        for(i=0; i<nRows; i++)
+        {
+            p = desc.ptr<uchar>(i);
+            for(j=0; j<nCols; j++)
+            {
+                if(is_in_1_0)
+                { 
+                    p[j] =  round(p[j]);
+                }
+                else
+                {          
+                    // printf("rounded %f to %d\n" ,p[j],  round(p[j]));
+                    if(p[j] > maxVal/2)
+                    {
+                    p[j] = 0; 
+                    }
+                    else
+                    {
+                        p[j] = 1; 
+                    }
+                }
+            }
+        }
+    }
     // void ORBextractor::ComputeKeyPointsOld(std::vector<std::vector<KeyPoint> > &allKeypoints)
     // {
     //     allKeypoints.resize(nlevels);

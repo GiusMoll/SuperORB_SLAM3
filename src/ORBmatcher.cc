@@ -901,7 +901,7 @@ namespace ORB_SLAM3
                         {
                             vpMatches12[idx1]=vpMapPoints2[bestIdx2];
                             vbMatched2[bestIdx2]=true;
-
+#ifdef ENABLE_CHECK_ORIENTATION
                             if(mbCheckOrientation)
                             {
                                 float rot = vKeysUn1[idx1].angle-vKeysUn2[bestIdx2].angle;
@@ -913,6 +913,8 @@ namespace ORB_SLAM3
                                 assert(bin>=0 && bin<HISTO_LENGTH);
                                 rotHist[bin].push_back(idx1);
                             }
+#endif
+
                             nmatches++;
                         }
                     }
@@ -1150,7 +1152,7 @@ namespace ORB_SLAM3
                                                                                                      : pKF2 -> mvKeysRight[bestIdx2 - pKF2 -> NLeft];
                         vMatches12[idx1]=bestIdx2;
                         nmatches++;
-
+#ifdef ENABLE_CHECK_ORIENTATION
                         if(mbCheckOrientation)
                         {
                             float rot = kp1.angle-kp2.angle;
@@ -1162,6 +1164,8 @@ namespace ORB_SLAM3
                             assert(bin>=0 && bin<HISTO_LENGTH);
                             rotHist[bin].push_back(idx1);
                         }
+#endif
+
                     }
                 }
 
@@ -2147,28 +2151,29 @@ namespace ORB_SLAM3
     float ORBmatcher::DescriptorDistance(const cv::Mat &a, const cv::Mat &b)
     {
         // printf("%s \n", __PRETTY_FUNCTION__);
-#ifdef USE_ORBFEATURES
-        // const int *pa = a.ptr<int32_t>();
-        // const int *pb = b.ptr<int32_t>();
+#ifdef USE_BINARY_DESCRIPTORS 
+    
+        const int *pa = a.ptr<int32_t>();
+        const int *pb = b.ptr<int32_t>();
 
-        // int dist=0;
+        int dist=0;
 
-        // for(int i=0; i<8; i++, pa++, pb++)
-        // {
-        //     unsigned  int v = *pa ^ *pb;
-        //     v = v - ((v >> 1) & 0x55555555);
-        //     v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
-        //     dist += (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
-        // }
+        for(int i=0; i<8; i++, pa++, pb++)
+        {
+            unsigned  int v = *pa ^ *pb;
+            v = v - ((v >> 1) & 0x55555555);
+            v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
+            dist += (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
+        }
+        return (float)dist;
 #else
 
-
         float dist = (float)cv::norm(a, b, cv::NORM_L2);
-
         // printf("%s, distance evaluated: %f \n", __PRETTY_FUNCTION__, dist);
+        return dist;
 
 #endif
-        return dist;
+        
     }
 
 } //namespace ORB_SLAM

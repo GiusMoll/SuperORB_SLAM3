@@ -19,6 +19,7 @@
 #include "KeyFrame.h"
 #include "Converter.h"
 #include "ImuTypes.h"
+#include "Defs.h"
 #include<mutex>
 
 namespace ORB_SLAM3
@@ -103,9 +104,10 @@ void KeyFrame::ComputeBoW()
         // Feature vector associate features with nodes in the 4th level (from leaves up)
         // We assume the vocabulary tree has 6 levels, change the 4 otherwise
         
-        // mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,4);
-        mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,0);
-        printf("%s Extracted %d BOW FEATURES \n", __PRETTY_FUNCTION__, mBowVec.size());
+        mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,DBOW_LEVELS);
+        // mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,3);
+        printf("%s Frame - Extracted %d BOW FEATURES \n", __PRETTY_FUNCTION__, mBowVec.size());
+        printf("%s KeyFrame - Extracted %d BOW FEATURES \n", __PRETTY_FUNCTION__, mBowVec.size());
     }
 }
 
