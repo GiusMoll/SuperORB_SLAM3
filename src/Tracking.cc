@@ -2081,12 +2081,10 @@ void Tracking::Track()
                     // In last frame we tracked enough MapPoints in the map
                     if(mbVelocity)
                     {
-                        printf("mbVelocity is true!\n");
                         bOK = TrackWithMotionModel();
                     }
                     else
                     {
-                        printf("mbVelocity is false!\n");
                         bOK = TrackReferenceKeyFrame();
                     }
                 }

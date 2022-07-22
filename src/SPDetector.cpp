@@ -35,6 +35,10 @@
 
 #include <SPDetector.hpp>
 
+// #define WITH_TICTOC
+#include <tictoc.hpp>
+
+
 namespace SuperPointSLAM
 {
 
@@ -178,28 +182,41 @@ void SPDetector::SemiNMS(at::Tensor& kpts)
         kpts = kpts.to(kCUDA);
 }
 
+
 void SPDetector::detect(const cv::Mat &img, bool cuda)
 {
+
+    TIC;
+
     auto x = torch::from_blob(img.clone().data, {1, 1, img.rows, img.cols}, torch::kByte).clone();
     x = x.to(torch::kFloat) / 255;
 
-    bool use_cuda = cuda && torch::cuda::is_available();
+    // bool use_cuda = cuda && torch::cuda::is_available();
     torch::DeviceType device_type;
-    if (use_cuda)
+    if (cuda)
         device_type = torch::kCUDA;
     else
         device_type = torch::kCPU;
+
     torch::Device device(device_type);
 
-    model->to(device);
+    // this->model->to(device);
     x = x.set_requires_grad(false);
-    auto out = model->forward(x.to(device));
+
+    auto out = this->model->forward(x.to(device));
 
     mProb = out[0].squeeze(0);  // [H, W]
     mDesc = out[1];             // [1, 256, H/8, W/8]
 
+    TOC;
+
     // printf("%s \n" , __PRETTY_FUNCTION__);
-    // printf("%d, %d, %d \n", mProb.sizes()[0], mProb.sizes()[1], mProb.sizes()[2]);
+    // std::cout << __PRETTY_FUNCTION__ << " IN " <<  x.sizes() << std::endl;
+
+    // std::cout << __PRETTY_FUNCTION__ << " OUT " <<  out[0].sizes() << std::endl;
+    // std::cout << __PRETTY_FUNCTION__ << " OUT " <<  out[1].sizes() << std::endl;
+
+    // printf("%d, %d, %d \n", out[0].sizes()[0], mProb.sizes()[1], mProb.sizes()[2]);
     // printf("%d, %d, %d \n", mDesc.sizes()[0], mDesc.sizes()[1], mDesc.sizes()[2]);
 
 }
@@ -211,6 +228,7 @@ void SPDetector::detect(const cv::Mat &img, bool cuda)
 
 void SPDetector::getKeyPoints(float threshold, int iniX, int maxX, int iniY, int maxY, std::vector<cv::KeyPoint> &keypoints, bool nms)
 {
+    TIC
     auto prob = mProb.slice(0, iniY, maxY).slice(1, iniX, maxX);  // [h, w]
     // if(use_threshold)
     // {
@@ -218,7 +236,7 @@ void SPDetector::getKeyPoints(float threshold, int iniX, int maxX, int iniY, int
     // }
     // else
     // {
-        auto kpts = (prob > threshold);
+    auto kpts = (prob > threshold);
         
     // }
     
@@ -229,6 +247,9 @@ void SPDetector::getKeyPoints(float threshold, int iniX, int maxX, int iniY, int
         float response = prob[kpts[i][0]][kpts[i][1]].item<float>();
         keypoints_no_nms.push_back(cv::KeyPoint(kpts[i][1].item<float>(), kpts[i][0].item<float>(), 8, -1, response));
     }
+
+    TOC
+    TIC
 
     if (nms) {
         cv::Mat conf(keypoints_no_nms.size(), 1, CV_32F);
@@ -250,8 +271,64 @@ void SPDetector::getKeyPoints(float threshold, int iniX, int maxX, int iniY, int
     else {
         keypoints = keypoints_no_nms;
     }
+
+    TOC
 }
 
+
+void SPDetector::getKeyPoints(const int& num_keypoints, std::vector<cv::KeyPoint> &keypoints, bool nms)
+{
+    TIC
+    auto prob = mProb.clone();  // [h, w]
+    auto res = torch::topk(prob.flatten(), num_keypoints);
+
+    // std::cout << std::get<0>(res) << "\n\n\n"; 
+    // std::cout << std::get<1>(res) << "\n\n\n"; 
+    // std::cout << prob.sizes() << "\n\n\n"; 
+    // std::cout << std::get<1>(res)[0].item<int>() << std::endl;
+
+    // Unravel index
+    int rows = 0; 
+    int cols = 0; 
+    int nrows = prob.size(0);
+    int ncols = prob.size(1);
+
+    std::vector<cv::KeyPoint> keypoints_no_nms;
+    for (int i = 0; i < num_keypoints; i++) {
+        rows = std::get<1>(res)[i].item<int>() / ncols;
+        cols = std::get<1>(res)[i].item<int>() % ncols;
+        // std::cout << rows << " " << cols << std::endl;
+        // std::cout << "Keypoint value: " <<  << "Keypoint position" << std::endl;
+        float response = prob[rows][cols].item<float>();
+        keypoints_no_nms.push_back(cv::KeyPoint(cols, rows, 8, -1, response));
+    }
+
+    TOC
+    // TIC
+
+    if (nms) {
+        cv::Mat conf(keypoints_no_nms.size(), 1, CV_32F);
+        for (size_t i = 0; i < keypoints_no_nms.size(); i++) {
+            int x = keypoints_no_nms[i].pt.x;
+            int y = keypoints_no_nms[i].pt.y;
+            conf.at<float>(i, 0) = prob[y][x].item<float>();
+        }
+
+        // cv::Mat descriptors;
+
+        int border = 0;
+        int dist_thresh = 4;
+        int height = nrows;
+        int width = ncols;
+
+        NMS2(keypoints_no_nms, conf, keypoints, border, dist_thresh, width, height);
+    }
+    else {
+        keypoints = keypoints_no_nms;
+    }
+
+    // TOC
+}
 
 void SPDetector::computeDescriptors(const std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors)
 {
@@ -265,6 +342,18 @@ void SPDetector::computeDescriptors(const std::vector<cv::KeyPoint> &keypoints, 
     auto fkpts = torch::from_blob(kpt_mat.data, {keypoints.size(), 2}, torch::kFloat);
 
     auto grid = torch::zeros({1, 1, fkpts.size(0), 2});  // [1, 1, n_keypoints, 2]
+
+    torch::DeviceType device_type;
+    if (torch::cuda::is_available())
+        device_type = torch::kCUDA;
+    else
+        device_type = torch::kCPU;
+
+    torch::Device device(device_type);
+
+    grid = grid.to(device);
+
+
     grid[0][0].slice(1, 0, 1) = 2.0 * fkpts.slice(1, 1, 2) / mProb.size(1) - 1;  // x
     grid[0][0].slice(1, 1, 2) = 2.0 * fkpts.slice(1, 0, 1) / mProb.size(0) - 1;  // y
 

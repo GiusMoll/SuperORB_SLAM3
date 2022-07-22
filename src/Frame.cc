@@ -421,8 +421,8 @@ void Frame::ExtractORB(int flag, const cv::Mat &im, const int x0, const int x1)
     if(flag==0)
     {
         monoLeft = (*mpORBextractorLeft)(im,cv::Mat(),mvKeys,mDescriptors,vLapping);
-        cout << "desc size: " << mDescriptors.rows << ' ' << mDescriptors.cols << endl;
-        cout << "mvKeys size: " << mvKeys.size() << endl;
+        // cout << "desc size: " << mDescriptors.rows << ' ' << mDescriptors.cols << endl;
+        // cout << "mvKeys size: " << mvKeys.size() << endl;
     }
     else
         monoRight = (*mpORBextractorRight)(im,cv::Mat(),mvKeysRight,mDescriptorsRight,vLapping);
@@ -749,8 +749,8 @@ void Frame::ComputeBoW()
         mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,DBOW_LEVELS);
         
         // mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,3);
-        printf("%s Frame - Extracted %d BOW FEATURES \n", __PRETTY_FUNCTION__, mBowVec.size());
-        printf("vCurrentDesc %d, mBowVec %d, mFeatVec %d\n",vCurrentDesc.size() ,mBowVec.size() ,mFeatVec.size() );
+        // printf("%s Frame - Extracted %d BOW FEATURES \n", __PRETTY_FUNCTION__, mBowVec.size());
+        // printf("vCurrentDesc %d, mBowVec %d, mFeatVec %d\n",vCurrentDesc.size() ,mBowVec.size() ,mFeatVec.size() );
     }
 }
 

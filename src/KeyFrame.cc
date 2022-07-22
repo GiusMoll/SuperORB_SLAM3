@@ -106,8 +106,8 @@ void KeyFrame::ComputeBoW()
         
         mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,DBOW_LEVELS);
         // mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,3);
-        printf("%s Frame - Extracted %d BOW FEATURES \n", __PRETTY_FUNCTION__, mBowVec.size());
-        printf("%s KeyFrame - Extracted %d BOW FEATURES \n", __PRETTY_FUNCTION__, mBowVec.size());
+        // printf("%s Frame - Extracted %d BOW FEATURES \n", __PRETTY_FUNCTION__, mBowVec.size());
+        // printf("%s KeyFrame - Extracted %d BOW FEATURES \n", __PRETTY_FUNCTION__, mBowVec.size());
     }
 }
 

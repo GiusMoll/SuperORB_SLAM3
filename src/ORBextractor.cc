@@ -65,7 +65,13 @@
 using namespace cv;
 using namespace std;
 
+// #define DEBUG_PRINTF
 
+#ifdef DEBUG_PRINTF
+#define DBG_PRINTF printf
+#else
+#define DBG_PRINTF(...)
+#endif
 
 namespace ORB_SLAM3
 {
@@ -475,6 +481,7 @@ namespace ORB_SLAM3
 #else
 
         std::cout << "Initializing Superpoint detector... \n" ;
+        this->weight_dir = "/home/ubuntu/SuperORB_SLAM3/Weights/superpoint.pt";
         this->model = new SuperPointSLAM::SPDetector(this->weight_dir, torch::cuda::is_available());
         // model_SP = make_shared<SuperPointSLAM::SuperPoint>();
         // torch::load(model_SP, this->weight_dir);
@@ -830,6 +837,12 @@ namespace ORB_SLAM3
 
         return vResultKeys;
     }
+
+// #define WITH_TICTOC
+#include <tictoc.hpp>
+#define ENABLE_SUBBLOCKS_KEY_EXTRACTION
+
+
 #ifdef USE_ORBFEATURES
     void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoints)
     {
@@ -959,15 +972,23 @@ namespace ORB_SLAM3
 
         vector<cv::Mat> vDesc;
 
+        // const float W = 100;
         const float W = 30;
 
         DBG_PRINTF("%s\n", __PRETTY_FUNCTION__);
 
+        TIC
+
+
+
         for (int level = 0; level < nlevels; ++level)
         {
+
             // SuperPointSLAM::SPDetector detector(model_SP);
             // detector.detect(mvImagePyramid[level], false);
-            this->model->detect(mvImagePyramid[level], false);
+            this->model->detect(mvImagePyramid[level], true);
+
+#ifdef ENABLE_SUBBLOCKS_KEY_EXTRACTION
 
             const int minBorderX = EDGE_THRESHOLD-3;
             const int minBorderY = minBorderX;
@@ -1010,7 +1031,7 @@ namespace ORB_SLAM3
                     //      vKeysCell,iniThFAST,true);
                     this->model->getKeyPoints(iniThFAST, iniX, maxX, iniY, maxY, vKeysCell, true);
                     // detector.getKeyPoints(iniThFAST, iniX, maxX, iniY, maxY, vKeysCell, true);
-                    // printf("vKeysCell size: %lu", vKeysCell.size());
+                    // DBG_PRINTF("vKeysCell size: %lu", vKeysCell.size());
 
 
                     if(vKeysCell.empty())
@@ -1034,11 +1055,51 @@ namespace ORB_SLAM3
                 }
             }
 
+#else
+
+            const int minBorderX = 0;
+            const int minBorderY = 0;
+            const int maxBorderX = mvImagePyramid[level].cols;
+            const int maxBorderY = mvImagePyramid[level].rows;
+
+            vector<cv::KeyPoint> vToDistributeKeys;
+            vToDistributeKeys.reserve(nfeatures*10);
+
+            int num_kpts = 200;
+            
+            this->model->detect(mvImagePyramid[level], true);
+            vector<cv::KeyPoint> vKeysCell;
+            this->model->getKeyPoints(num_kpts, vKeysCell, true);
+
+            std::cout << "Keypoints num:" << vKeysCell.size() << std::endl;
+
+            for(vector<cv::KeyPoint>::iterator vit=vKeysCell.begin(); vit!=vKeysCell.end();vit++)
+            {
+                // (*vit).pt.x+=j*wCell;
+                // (*vit).pt.y+=i*hCell;
+                vToDistributeKeys.push_back(*vit);
+            }
+
+            // vToDistributeKeys = vKeysCell;
+
+#endif
+
             vector<KeyPoint> & keypoints = allKeypoints[level];
             keypoints.reserve(nfeatures);
 
+            
+            // TICTOC_NODISPLAY
+
+            printf(" --->"); TOC
             keypoints = DistributeOctTree(vToDistributeKeys, minBorderX, maxBorderX,
                                         minBorderY, maxBorderY,mnFeaturesPerLevel[level], level);
+
+                                        std::cout << "Keypoints num -- 1 :" << keypoints.size() << std::endl;
+
+
+            // TICTOC_DISPLAY
+
+            printf(" --->"); TOC
 
             const int scaledPatchSize = PATCH_SIZE*mvScaleFactor[level];
 
@@ -1052,11 +1113,15 @@ namespace ORB_SLAM3
                 keypoints[i].size = scaledPatchSize;
             }
 
+            std::cout << "Keypoints num -- 2 :" << keypoints.size() << std::endl;
+
             cv::Mat desc;
             this->model->computeDescriptors(keypoints, desc);
         #ifdef USE_BINARY_DESCRIPTORS 
             convert_descriptors_to_binary(desc, false);
         #endif 
+
+            std::cout << "Descriptors num -- 2 :" << desc.size() << std::endl;
             // detector.computeDescriptors(keypoints, desc);
             vDesc.push_back(desc);
         }
@@ -1068,6 +1133,8 @@ namespace ORB_SLAM3
         // // compute orientations
         // for (int level = 0; level < nlevels; ++level)
         //     computeOrientation(mvImagePyramid[level], allKeypoints[level], umax);
+
+        TOC
 
 #endif  
 
@@ -1108,7 +1175,7 @@ namespace ORB_SLAM3
                 }
                 else
                 {          
-                    // printf("rounded %f to %d\n" ,p[j],  round(p[j]));
+                    // DBG_PRINTF("rounded %f to %d\n" ,p[j],  round(p[j]));
                     if(p[j] > maxVal/2)
                     {
                     p[j] = 0; 
@@ -1401,7 +1468,7 @@ namespace ORB_SLAM3
 
         if(_image.empty())
         {
-            printf("WARNING: empty image!!!\n");
+            DBG_PRINTF("WARNING: empty image!!!\n");
             return -1;
         }
 

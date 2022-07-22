@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 project(ORB_SLAM3)
 
 ### LIBTORCH
-set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/libtorch")
+#set(Torch_DIR "/home/ubuntu/pytorch_master/pytorch/torch/share/cmake/Torch")  # libtorch
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/libtorch/")
+
 find_package(Torch REQUIRED QUIET)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 # include_directories(${TORCH_INCLUDE_DIRS})
@@ -37,7 +39,7 @@ endif()
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
-find_package(OpenCV 4.2.0)
+find_package(OpenCV 3.4.0)
    if(NOT OpenCV_FOUND)
       message(FATAL_ERROR "OpenCV > 4.2.0 not found.")
    endif()

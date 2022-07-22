@@ -23,6 +23,14 @@
 
 #include<opencv2/core/core.hpp>
 
+// #define DEBUG_PRINTF
+
+#ifdef DEBUG_PRINTF
+#define DBG_PRINTF printf
+#else
+#define DBG_PRINTF(...)
+#endif
+
 
 #ifdef USE_DBOW2
     #include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
@@ -51,7 +59,7 @@ namespace ORB_SLAM3
 
     int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoints, const float th, const bool bFarPoints, const float thFarPoints)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
+        //DBG_PRINTF("%s \n", __PRETTY_FUNCTION__);
         int nmatches=0, left = 0, right = 0;
 
         const bool bFactor = th!=1.0;
@@ -220,7 +228,7 @@ namespace ORB_SLAM3
             }
         }
 
-        printf("Returned nmatches: %d \n", nmatches);
+        DBG_PRINTF("Returned nmatches: %d \n", nmatches);
         return nmatches;
     }
 
@@ -234,7 +242,7 @@ namespace ORB_SLAM3
 
     int ORBmatcher::SearchByBoW(KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPointMatches)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
+        //DBG_PRINTF("%s \n", __PRETTY_FUNCTION__);
         const vector<MapPoint*> vpMapPointsKF = pKF->GetMapPointMatches();
 
         vpMapPointMatches = vector<MapPoint*>(F.N,static_cast<MapPoint*>(NULL));
@@ -447,14 +455,14 @@ namespace ORB_SLAM3
             }
         }
 #endif
-        printf("Returned nmatches: %d \n", nmatches);
+        DBG_PRINTF("Returned nmatches: %d \n", nmatches);
         return nmatches;
     }
 
     int ORBmatcher::SearchByProjection(KeyFrame* pKF, Sophus::Sim3f &Scw, const vector<MapPoint*> &vpPoints,
                                        vector<MapPoint*> &vpMatched, int th, float ratioHamming)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
+        //DBG_PRINTF("%s \n", __PRETTY_FUNCTION__);
         // Get Calibration Parameters for later projection
         const float &fx = pKF->fx;
         const float &fy = pKF->fy;
@@ -555,14 +563,14 @@ namespace ORB_SLAM3
             }
 
         }
-        printf("Returned nmatches: %d \n", nmatches);
+        DBG_PRINTF("Returned nmatches: %d \n", nmatches);
         return nmatches;
     }
 
     int ORBmatcher::SearchByProjection(KeyFrame* pKF, Sophus::Sim3<float> &Scw, const std::vector<MapPoint*> &vpPoints, const std::vector<KeyFrame*> &vpPointsKFs,
                                        std::vector<MapPoint*> &vpMatched, std::vector<KeyFrame*> &vpMatchedKF, int th, float ratioHamming)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
+        //DBG_PRINTF("%s \n", __PRETTY_FUNCTION__);
         // Get Calibration Parameters for later projection
         const float &fx = pKF->fx;
         const float &fy = pKF->fy;
@@ -670,13 +678,13 @@ namespace ORB_SLAM3
             }
 
         }
-        printf("Returned nmatches: %d \n", nmatches);
+        DBG_PRINTF("Returned nmatches: %d \n", nmatches);
         return nmatches;
     }
 
     int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f> &vbPrevMatched, vector<int> &vnMatches12, int windowSize)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
+        //DBG_PRINTF("%s \n", __PRETTY_FUNCTION__);
         int nmatches=0;
         vnMatches12 = vector<int>(F1.mvKeysUn.size(),-1);
 
@@ -688,7 +696,7 @@ namespace ORB_SLAM3
         vector<int> vMatchedDistance(F2.mvKeysUn.size(),INT_MAX);
         vector<int> vnMatches21(F2.mvKeysUn.size(),-1);
 
-        printf("Num keypoints F1: %d, num keypoints F2: %d\n",F1.mvKeysUn.size(),F2.mvKeysUn.size());
+        DBG_PRINTF("Num keypoints F1: %d, num keypoints F2: %d\n",F1.mvKeysUn.size(),F2.mvKeysUn.size());
 
         for(size_t i1=0, iend1=F1.mvKeysUn.size(); i1<iend1; i1++)
         {
@@ -792,13 +800,13 @@ namespace ORB_SLAM3
             if(vnMatches12[i1]>=0)
                 vbPrevMatched[i1]=F2.mvKeysUn[vnMatches12[i1]].pt;
 
-        printf("Returned nmatches: %d \n", nmatches);
+        DBG_PRINTF("Returned nmatches: %d \n", nmatches);
         return nmatches;
     }
 
     int ORBmatcher::SearchByBoW(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint *> &vpMatches12)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
+        //DBG_PRINTF("%s \n", __PRETTY_FUNCTION__);
         const vector<cv::KeyPoint> &vKeysUn1 = pKF1->mvKeysUn;
 #ifdef USE_DBOW2
         const DBoW2::FeatureVector &vFeatVec1 = pKF1->mFeatVec;
@@ -954,14 +962,14 @@ namespace ORB_SLAM3
         }
 #endif
 
-        printf("Returned nmatches: %d \n", nmatches);
+        DBG_PRINTF("Returned nmatches: %d \n", nmatches);
         return nmatches;
     }
 
     int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2,
                                            vector<pair<size_t, size_t> > &vMatchedPairs, const bool bOnlyStereo, const bool bCoarse)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
+        //DBG_PRINTF("%s \n", __PRETTY_FUNCTION__);
         #ifdef USE_DBOW2
         const DBoW2::FeatureVector &vFeatVec1 = pKF1->mFeatVec;
         const DBoW2::FeatureVector &vFeatVec2 = pKF2->mFeatVec;
@@ -1185,7 +1193,7 @@ namespace ORB_SLAM3
         auto toc = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = tic-toc;
 
-        std::cout << "matching time" << elapsed_seconds.count() << std::endl;
+        // std::cout << "matching time" << elapsed_seconds.count() << std::endl;
 
 #ifdef ENABLE_CHECK_ORIENTATION
         if(mbCheckOrientation)
@@ -1220,13 +1228,13 @@ namespace ORB_SLAM3
             vMatchedPairs.push_back(make_pair(i,vMatches12[i]));
         }
 
-        printf("Returned nmatches: %d \n", nmatches);
+        DBG_PRINTF("Returned nmatches: %d \n", nmatches);
         return nmatches;
     }
 
     int ORBmatcher::Fuse(KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints, const float th, const bool bRight)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
+        // DBG_PRINTF("%s \n", __PRETTY_FUNCTION__);
         GeometricCamera* pCamera;
         Sophus::SE3f Tcw;
         Eigen::Vector3f Ow;
@@ -1419,7 +1427,7 @@ namespace ORB_SLAM3
 
     int ORBmatcher::Fuse(KeyFrame *pKF, Sophus::Sim3f &Scw, const vector<MapPoint *> &vpPoints, float th, vector<MapPoint *> &vpReplacePoint)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
+        //DBG_PRINTF("%s \n", __PRETTY_FUNCTION__);
         // Get Calibration Parameters for later projection
         const float &fx = pKF->fx;
         const float &fy = pKF->fy;
@@ -1537,7 +1545,7 @@ namespace ORB_SLAM3
 
     int ORBmatcher::SearchBySim3(KeyFrame* pKF1, KeyFrame* pKF2, std::vector<MapPoint *> &vpMatches12, const Sophus::Sim3f &S12, const float th)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
+        // DBG_PRINTF("%s \n", __PRETTY_FUNCTION__);
         const float &fx = pKF1->fx;
         const float &fy = pKF1->fy;
         const float &cx = pKF1->cx;
@@ -1752,14 +1760,14 @@ namespace ORB_SLAM3
             }
         }
 
-        printf("Returned nFound: %d \n", nFound);
+        DBG_PRINTF("Returned nFound: %d \n", nFound);
 
         return nFound;
     }
 
     int ORBmatcher::SearchByProjection(Frame &CurrentFrame, const Frame &LastFrame, const float th, const bool bMono)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
+        //DBG_PRINTF("%s \n", __PRETTY_FUNCTION__);
         int nmatches = 0;
 
         // Rotation Histogram (to check rotation consistency)
@@ -1972,13 +1980,13 @@ namespace ORB_SLAM3
             }
         }
 #endif
-        printf("Returned nmatches: %d \n", nmatches);
+        DBG_PRINTF("Returned nmatches: %d \n", nmatches);
         return nmatches;
     }
 
     int ORBmatcher::SearchByProjection(Frame &CurrentFrame, KeyFrame *pKF, const set<MapPoint*> &sAlreadyFound, const float th , const int ORBdist)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
+        //DBG_PRINTF("%s \n", __PRETTY_FUNCTION__);
         int nmatches = 0;
 
         const Sophus::SE3f Tcw = CurrentFrame.GetPose();
@@ -2098,7 +2106,7 @@ namespace ORB_SLAM3
             }
         }
 #endif
-        printf("Returned nmatches: %d \n", nmatches);
+        DBG_PRINTF("Returned nmatches: %d \n", nmatches);
         return nmatches;
     }
 
@@ -2150,7 +2158,7 @@ namespace ORB_SLAM3
 // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
     float ORBmatcher::DescriptorDistance(const cv::Mat &a, const cv::Mat &b)
     {
-        // printf("%s \n", __PRETTY_FUNCTION__);
+        //DBG_PRINTF("%s \n", __PRETTY_FUNCTION__);
 #ifdef USE_BINARY_DESCRIPTORS 
     
         const int *pa = a.ptr<int32_t>();
@@ -2169,7 +2177,7 @@ namespace ORB_SLAM3
 #else
 
         float dist = (float)cv::norm(a, b, cv::NORM_L2);
-        // printf("%s, distance evaluated: %f \n", __PRETTY_FUNCTION__, dist);
+        // DBG_PRINTF("%s, distance evaluated: %f \n", __PRETTY_FUNCTION__, dist);
         return dist;
 
 #endif

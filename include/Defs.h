@@ -9,6 +9,7 @@
 // #define USE_DBOW2
 // #define USE_BINARY_DESCRIPTORS 
 #define DBOW_LEVELS 0
+// #define ENABLE_SUBBLOCKS_KEY_EXTRACTION
 
 
 

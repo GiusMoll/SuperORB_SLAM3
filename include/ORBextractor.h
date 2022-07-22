@@ -114,7 +114,7 @@ protected:
     std::vector<float> mvLevelSigma2;
     std::vector<float> mvInvLevelSigma2;
 
-    const std::string weight_dir = "/home/giuseppe/SuperORB_SLAM3/Weights/superpoint.pt";
+    std::string weight_dir;
     SuperPointSLAM::SPDetector* model;
     // std::shared_ptr<SuperPointSLAM::SuperPoint> model_SP;
 
