@@ -204,6 +204,11 @@ void SPDetector::detect(const cv::Mat &img, bool cuda)
     x = x.set_requires_grad(false);
 
     auto out = this->model->forward(x.to(device));
+    
+    torch::Device device_cpu(torch::kCPU);
+
+    out[0] = out[0].to(device_cpu);
+    out[1] = out[1].to(device_cpu);
 
     mProb = out[0].squeeze(0);  // [H, W]
     mDesc = out[1];             // [1, 256, H/8, W/8]
@@ -280,7 +285,12 @@ void SPDetector::getKeyPoints(const int& num_keypoints, std::vector<cv::KeyPoint
 {
     TIC
     auto prob = mProb.clone();  // [h, w]
+    TOC
     auto res = torch::topk(prob.flatten(), num_keypoints);
+    // std::get<0>(res) = std::get<0>(res).to(torch::kCPU);
+    // std::get<0>(res) = std::get<1>(res).to(torch::kCPU);
+
+    TOC
 
     // std::cout << std::get<0>(res) << "\n\n\n"; 
     // std::cout << std::get<1>(res) << "\n\n\n"; 
@@ -288,19 +298,25 @@ void SPDetector::getKeyPoints(const int& num_keypoints, std::vector<cv::KeyPoint
     // std::cout << std::get<1>(res)[0].item<int>() << std::endl;
 
     // Unravel index
-    int rows = 0; 
-    int cols = 0; 
+    // int rows = 0; 
+    // int cols = 0; 
     int nrows = prob.size(0);
     int ncols = prob.size(1);
 
+    auto rows = std::get<1>(res).floor_divide(ncols);
+    auto cols = std::get<1>(res) % ncols;
+
+    TOC
+
     std::vector<cv::KeyPoint> keypoints_no_nms;
     for (int i = 0; i < num_keypoints; i++) {
-        rows = std::get<1>(res)[i].item<int>() / ncols;
-        cols = std::get<1>(res)[i].item<int>() % ncols;
+        // rows = std::get<1>(res)[i].item<int>() / ncols;
+        // cols = std::get<1>(res)[i].item<int>() % ncols;
         // std::cout << rows << " " << cols << std::endl;
         // std::cout << "Keypoint value: " <<  << "Keypoint position" << std::endl;
-        float response = prob[rows][cols].item<float>();
-        keypoints_no_nms.push_back(cv::KeyPoint(cols, rows, 8, -1, response));
+        // float response = prob[rows][cols].item<float>();
+        float response = std::get<0>(res)[i].item<float>();
+        keypoints_no_nms.push_back(cv::KeyPoint(cols[i].item<int>(), rows[i].item<int>(), 8, -1, response));
     }
 
     TOC
@@ -330,8 +346,11 @@ void SPDetector::getKeyPoints(const int& num_keypoints, std::vector<cv::KeyPoint
     // TOC
 }
 
-void SPDetector::computeDescriptors(const std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors)
+void SPDetector::computeDescriptors(const std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors, bool use_cuda)
 {
+
+    TIC 
+
     cv::Mat kpt_mat(keypoints.size(), 2, CV_32F);  // [n_keypoints, 2]  (y, x)
 
     for (size_t i = 0; i < keypoints.size(); i++) {
@@ -344,7 +363,7 @@ void SPDetector::computeDescriptors(const std::vector<cv::KeyPoint> &keypoints, 
     auto grid = torch::zeros({1, 1, fkpts.size(0), 2});  // [1, 1, n_keypoints, 2]
 
     torch::DeviceType device_type;
-    if (torch::cuda::is_available())
+    if (torch::cuda::is_available() && use_cuda)
         device_type = torch::kCUDA;
     else
         device_type = torch::kCPU;
@@ -370,6 +389,8 @@ void SPDetector::computeDescriptors(const std::vector<cv::KeyPoint> &keypoints, 
     cv::Mat desc_mat(cv::Size(desc.size(1), desc.size(0)), CV_32FC1, desc.data<float>());
 
     descriptors = desc_mat.clone();
+
+    TOC
     // printf("%s, Descriptors cols: %d, rows:%d; mDesc 0: %d, 1: %d, 2: %d \n",__PRETTY_FUNCTION__, descriptors.cols, descriptors.rows, mDesc.sizes()[0], mDesc.sizes()[1], mDesc.sizes()[2]);
 }
 

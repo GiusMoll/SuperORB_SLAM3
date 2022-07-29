@@ -454,7 +454,9 @@ Sophus::SE3f System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const
 Sophus::SE3f System::TrackMonocular(const cv::Mat &im, const double &timestamp, const vector<IMU::Point>& vImuMeas, string filename)
 {
 
-    // printf("\n\n\n-----------START----------- \n");
+    #ifdef WITH_TICTOC
+    printf("\n\n\n-----------START----------- \n");
+    #endif
 
     TIC;
 
@@ -531,7 +533,9 @@ Sophus::SE3f System::TrackMonocular(const cv::Mat &im, const double &timestamp, 
 
     TOC;
 
-    // printf("------------END------------ \n\n\n");
+    #ifdef WITH_TICTOC
+    printf("------------END------------ \n\n\n");
+    #endif
 
     return Tcw;
 }

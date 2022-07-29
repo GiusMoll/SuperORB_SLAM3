@@ -482,7 +482,12 @@ namespace ORB_SLAM3
 
         std::cout << "Initializing Superpoint detector... \n" ;
         this->weight_dir = "/home/ubuntu/SuperORB_SLAM3/Weights/superpoint.pt";
-        this->model = new SuperPointSLAM::SPDetector(this->weight_dir, torch::cuda::is_available());
+        // this->model = new SuperPointSLAM::SPDetector(this->weight_dir, SP_USE_CUDA);
+
+        ////////////////TEST/////////////////////
+        this->model = new SuperPointSLAM::SPDetector(this->weight_dir, true);
+        ////////////////////////////////////////
+
         // model_SP = make_shared<SuperPointSLAM::SuperPoint>();
         // torch::load(model_SP, this->weight_dir);
         if(torch::cuda::is_available())
@@ -840,7 +845,7 @@ namespace ORB_SLAM3
 
 // #define WITH_TICTOC
 #include <tictoc.hpp>
-#define ENABLE_SUBBLOCKS_KEY_EXTRACTION
+// #define ENABLE_SUBBLOCKS_KEY_EXTRACTION
 
 
 #ifdef USE_ORBFEATURES
@@ -979,7 +984,8 @@ namespace ORB_SLAM3
 
         TIC
 
-
+        vector<cv::KeyPoint> vToDistributeKeys;
+        vToDistributeKeys.reserve(nfeatures*10);
 
         for (int level = 0; level < nlevels; ++level)
         {
@@ -1062,16 +1068,20 @@ namespace ORB_SLAM3
             const int maxBorderX = mvImagePyramid[level].cols;
             const int maxBorderY = mvImagePyramid[level].rows;
 
-            vector<cv::KeyPoint> vToDistributeKeys;
-            vToDistributeKeys.reserve(nfeatures*10);
+            // vector<cv::KeyPoint> vToDistributeKeys;
+            // vToDistributeKeys.reserve(nfeatures*10);
 
-            int num_kpts = 200;
+            vToDistributeKeys.clear();
+
+            int num_kpts = 900;
+
+            TOC
             
-            this->model->detect(mvImagePyramid[level], true);
+            // this->model->detect(mvImagePyramid[level], true);
             vector<cv::KeyPoint> vKeysCell;
             this->model->getKeyPoints(num_kpts, vKeysCell, true);
 
-            std::cout << "Keypoints num:" << vKeysCell.size() << std::endl;
+            // std::cout << "Keypoints num:" << vKeysCell.size() << std::endl;
 
             for(vector<cv::KeyPoint>::iterator vit=vKeysCell.begin(); vit!=vKeysCell.end();vit++)
             {
@@ -1079,6 +1089,8 @@ namespace ORB_SLAM3
                 // (*vit).pt.y+=i*hCell;
                 vToDistributeKeys.push_back(*vit);
             }
+
+            TOC
 
             // vToDistributeKeys = vKeysCell;
 
@@ -1090,16 +1102,16 @@ namespace ORB_SLAM3
             
             // TICTOC_NODISPLAY
 
-            printf(" --->"); TOC
+            // TOC
             keypoints = DistributeOctTree(vToDistributeKeys, minBorderX, maxBorderX,
                                         minBorderY, maxBorderY,mnFeaturesPerLevel[level], level);
 
-                                        std::cout << "Keypoints num -- 1 :" << keypoints.size() << std::endl;
+                                        // std::cout << "Keypoints num -- 1 :" << keypoints.size() << std::endl;
 
 
             // TICTOC_DISPLAY
 
-            printf(" --->"); TOC
+            // TOC
 
             const int scaledPatchSize = PATCH_SIZE*mvScaleFactor[level];
 
@@ -1113,15 +1125,15 @@ namespace ORB_SLAM3
                 keypoints[i].size = scaledPatchSize;
             }
 
-            std::cout << "Keypoints num -- 2 :" << keypoints.size() << std::endl;
+            // std::cout << "Keypoints num -- 2 :" << keypoints.size() << std::endl;
 
             cv::Mat desc;
-            this->model->computeDescriptors(keypoints, desc);
+            this->model->computeDescriptors(keypoints, desc, SP_USE_CUDA);
         #ifdef USE_BINARY_DESCRIPTORS 
             convert_descriptors_to_binary(desc, false);
         #endif 
 
-            std::cout << "Descriptors num -- 2 :" << desc.size() << std::endl;
+            // std::cout << "Descriptors num -- 2 :" << desc.size() << std::endl;
             // detector.computeDescriptors(keypoints, desc);
             vDesc.push_back(desc);
         }

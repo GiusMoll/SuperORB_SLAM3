@@ -49,7 +49,7 @@ public:
     void detect(const cv::Mat &image, bool cuda);
     void getKeyPoints(float threshold, int iniX, int maxX, int iniY, int maxY, std::vector<cv::KeyPoint> &keypoints, bool nms);
     void getKeyPoints(const int& num_keypoints, std::vector<cv::KeyPoint> &keypoints, bool nms);
-    void computeDescriptors(const std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors);
+    void computeDescriptors(const std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors, bool use_cuda);
 
     int n_keypoints;
 
