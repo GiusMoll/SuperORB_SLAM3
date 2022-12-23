@@ -35,7 +35,7 @@
 
 #include <SPDetector.hpp>
 
-// #define WITH_TICTOC
+//#define WITH_TICTOC
 #include <tictoc.hpp>
 
 
@@ -233,7 +233,7 @@ void SPDetector::detect(const cv::Mat &img, bool cuda)
 
 void SPDetector::getKeyPoints(float threshold, int iniX, int maxX, int iniY, int maxY, std::vector<cv::KeyPoint> &keypoints, bool nms)
 {
-    TIC
+    //TIC
     auto prob = mProb.slice(0, iniY, maxY).slice(1, iniX, maxX);  // [h, w]
     // if(use_threshold)
     // {
@@ -253,8 +253,8 @@ void SPDetector::getKeyPoints(float threshold, int iniX, int maxX, int iniY, int
         keypoints_no_nms.push_back(cv::KeyPoint(kpts[i][1].item<float>(), kpts[i][0].item<float>(), 8, -1, response));
     }
 
-    TOC
-    TIC
+    //TOC
+    //TIC
 
     if (nms) {
         cv::Mat conf(keypoints_no_nms.size(), 1, CV_32F);
@@ -277,20 +277,85 @@ void SPDetector::getKeyPoints(float threshold, int iniX, int maxX, int iniY, int
         keypoints = keypoints_no_nms;
     }
 
-    TOC
+    //TOC
 }
 
+// void SPDetector::getKeyPoints(float threshold, int iniX, int maxX, int iniY, int maxY, const int& num_keypoints, std::vector<cv::KeyPoint> &keypoints, bool nms)
+// {
+//     TIC
+//     auto prob = mProb.clone();  // [h, w]
+//     TOC
+//     prob = prob.slice(0, iniY, maxY).slice(1, iniX, maxX); 
+//     auto res = torch::topk(prob.flatten(), num_keypoints);
+//     // std::get<0>(res) = std::get<0>(res).to(torch::kCPU);
+//     // std::get<0>(res) = std::get<1>(res).to(torch::kCPU);
+
+//     TOC
+
+//     // std::cout << std::get<0>(res) << "\n\n\n"; 
+//     // std::cout << std::get<1>(res) << "\n\n\n"; 
+//     // std::cout << prob.sizes() << "\n\n\n"; 
+//     // std::cout << std::get<1>(res)[0].item<int>() << std::endl;
+
+//     // Unravel index
+//     // int rows = 0; 
+//     // int cols = 0; 
+//     int nrows = prob.size(0);
+//     int ncols = prob.size(1);
+
+//     auto rows = std::get<1>(res).floor_divide(ncols);
+//     auto cols = std::get<1>(res) % ncols;
+
+//     TOC
+
+//     std::vector<cv::KeyPoint> keypoints_no_nms;
+//     for (int i = 0; i < num_keypoints; i++) {
+//         // rows = std::get<1>(res)[i].item<int>() / ncols;
+//         // cols = std::get<1>(res)[i].item<int>() % ncols;
+//         // std::cout << rows << " " << cols << std::endl;
+//         // std::cout << "Keypoint value: " <<  << "Keypoint position" << std::endl;
+//         // float response = prob[rows][cols].item<float>();
+//         float response = std::get<0>(res)[i].item<float>();
+//         keypoints_no_nms.push_back(cv::KeyPoint(cols[i].item<int>(), rows[i].item<int>(), 8, -1, response));
+//     }
+
+//     TOC
+//     // TIC
+
+//     if (nms) {
+//         cv::Mat conf(keypoints_no_nms.size(), 1, CV_32F);
+//         for (size_t i = 0; i < keypoints_no_nms.size(); i++) {
+//             int x = keypoints_no_nms[i].pt.x;
+//             int y = keypoints_no_nms[i].pt.y;
+//             conf.at<float>(i, 0) = prob[y][x].item<float>();
+//         }
+
+//         // cv::Mat descriptors;
+
+//         int border = 0;
+//         int dist_thresh = 4;
+//         int height = nrows;
+//         int width = ncols;
+
+//         NMS2(keypoints_no_nms, conf, keypoints, border, dist_thresh, width, height);
+//     }
+//     else {
+//         keypoints = keypoints_no_nms;
+//     }
+
+//     // TOC
+// }
 
 void SPDetector::getKeyPoints(const int& num_keypoints, std::vector<cv::KeyPoint> &keypoints, bool nms)
 {
-    TIC
+    // TIC
     auto prob = mProb.clone();  // [h, w]
     TOC
     auto res = torch::topk(prob.flatten(), num_keypoints);
     // std::get<0>(res) = std::get<0>(res).to(torch::kCPU);
     // std::get<0>(res) = std::get<1>(res).to(torch::kCPU);
 
-    TOC
+    // TOC
 
     // std::cout << std::get<0>(res) << "\n\n\n"; 
     // std::cout << std::get<1>(res) << "\n\n\n"; 
@@ -306,7 +371,7 @@ void SPDetector::getKeyPoints(const int& num_keypoints, std::vector<cv::KeyPoint
     auto rows = std::get<1>(res).floor_divide(ncols);
     auto cols = std::get<1>(res) % ncols;
 
-    TOC
+    // TOC
 
     std::vector<cv::KeyPoint> keypoints_no_nms;
     for (int i = 0; i < num_keypoints; i++) {
@@ -319,7 +384,7 @@ void SPDetector::getKeyPoints(const int& num_keypoints, std::vector<cv::KeyPoint
         keypoints_no_nms.push_back(cv::KeyPoint(cols[i].item<int>(), rows[i].item<int>(), 8, -1, response));
     }
 
-    TOC
+    // TOC
     // TIC
 
     if (nms) {
@@ -349,7 +414,7 @@ void SPDetector::getKeyPoints(const int& num_keypoints, std::vector<cv::KeyPoint
 void SPDetector::computeDescriptors(const std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors, bool use_cuda)
 {
 
-    TIC 
+    // TIC 
 
     cv::Mat kpt_mat(keypoints.size(), 2, CV_32F);  // [n_keypoints, 2]  (y, x)
 

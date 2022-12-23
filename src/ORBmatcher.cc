@@ -19,6 +19,10 @@
 #include "Defs.h"
 #include "ORBmatcher.h"
 
+#define WITH_TICTOC
+#include <tictoc.hpp>
+#define WITH_TICTOC
+
 #include<limits.h>
 
 #include<opencv2/core/core.hpp>
@@ -49,7 +53,7 @@ using namespace std;
 namespace ORB_SLAM3
 {
 
-    const float ORBmatcher::TH_HIGH = 0.70;
+    const float ORBmatcher::TH_HIGH = 0.90;
     const float ORBmatcher::TH_LOW = 0.30;
     const int ORBmatcher::HISTO_LENGTH = 30;
 
@@ -98,6 +102,7 @@ namespace ORB_SLAM3
                     int bestLevel2 = -1;
                     int bestIdx =-1 ;
 
+                    // TIC
                     // Get best and second matches with near keypoints
                     for(vector<size_t>::const_iterator vit=vIndices.begin(), vend=vIndices.end(); vit!=vend; vit++)
                     {
@@ -136,6 +141,7 @@ namespace ORB_SLAM3
                             bestDist2=dist;
                         }
                     }
+                    // TOC
 
                     // Apply ratio to second match (only if best and second are in the same scale level)
                     if(bestDist<=TH_HIGH)
@@ -178,6 +184,7 @@ namespace ORB_SLAM3
                     int bestLevel2 = -1;
                     int bestIdx =-1 ;
 
+                    // TIC
                     // Get best and second matches with near keypoints
                     for(vector<size_t>::const_iterator vit=vIndices.begin(), vend=vIndices.end(); vit!=vend; vit++)
                     {
@@ -206,6 +213,7 @@ namespace ORB_SLAM3
                             bestDist2=dist;
                         }
                     }
+                    // TOC
 
                     // Apply ratio to second match (only if best and second are in the same scale level)
                     if(bestDist<=TH_HIGH)
@@ -302,6 +310,7 @@ namespace ORB_SLAM3
                     int bestIdxFR =-1 ;
                     float bestDist2R=256;
 
+                    // TIC
                     for(size_t iF=0; iF<vIndicesF.size(); iF++)
                     {
                         if(F.Nleft == -1){
@@ -355,6 +364,7 @@ namespace ORB_SLAM3
                         }
 
                     }
+                    // TOC
 
                     if(bestDist1<=TH_LOW)
                     {
@@ -534,6 +544,7 @@ namespace ORB_SLAM3
 
             float bestDist = 256;
             int bestIdx = -1;
+            // TIC
             for(vector<size_t>::const_iterator vit=vIndices.begin(), vend=vIndices.end(); vit!=vend; vit++)
             {
                 const size_t idx = *vit;
@@ -555,6 +566,7 @@ namespace ORB_SLAM3
                     bestIdx = idx;
                 }
             }
+            // TOC
 
             if(bestDist<=TH_LOW*ratioHamming)
             {
@@ -648,6 +660,8 @@ namespace ORB_SLAM3
 
             float bestDist = 256;
             int bestIdx = -1;
+            
+            // TIC
             for(vector<size_t>::const_iterator vit=vIndices.begin(), vend=vIndices.end(); vit!=vend; vit++)
             {
                 const size_t idx = *vit;
@@ -669,6 +683,7 @@ namespace ORB_SLAM3
                     bestIdx = idx;
                 }
             }
+            // TOC
 
             if(bestDist<=TH_LOW*ratioHamming)
             {
@@ -716,6 +731,7 @@ namespace ORB_SLAM3
             float bestDist2 = INT_MAX;
             int bestIdx2 = -1;
 
+            // TIC
             for(vector<size_t>::iterator vit=vIndices2.begin(); vit!=vIndices2.end(); vit++)
             {
                 size_t i2 = *vit;
@@ -738,6 +754,7 @@ namespace ORB_SLAM3
                     bestDist2=dist;
                 }
             }
+            // TOC
 
             if(bestDist<=TH_LOW)
             {
@@ -871,6 +888,7 @@ namespace ORB_SLAM3
                     int bestIdx2 =-1 ;
                     float bestDist2=256;
 
+                    // TIC
                     for(size_t i2=0, iend2=f2it->second.size(); i2<iend2; i2++)
                     {
                         const size_t idx2 = f2it->second[i2];
@@ -902,6 +920,7 @@ namespace ORB_SLAM3
                             bestDist2=dist;
                         }
                     }
+                    // TOC
 
                     if(bestDist1<TH_LOW)
                     {
@@ -1070,7 +1089,7 @@ namespace ORB_SLAM3
 
                     float bestDist = TH_LOW;
                     int bestIdx2 = -1;
-
+                    // TIC
                     for(size_t i2=0, iend2=f2it->second.size(); i2<iend2; i2++)
                     {
                         size_t idx2 = f2it->second[i2];
@@ -1153,6 +1172,7 @@ namespace ORB_SLAM3
                         }
                     }
 
+                    // TOC
                     if(bestIdx2>=0)
                     {
                         const cv::KeyPoint &kp2 = (pKF2 -> NLeft == -1) ? pKF2->mvKeysUn[bestIdx2]
@@ -1345,6 +1365,7 @@ namespace ORB_SLAM3
 
             float bestDist = 256;
             int bestIdx = -1;
+            // TIC
             for(vector<size_t>::const_iterator vit=vIndices.begin(), vend=vIndices.end(); vit!=vend; vit++)
             {
                 size_t idx = *vit;
@@ -1395,6 +1416,7 @@ namespace ORB_SLAM3
                     bestIdx = idx;
                 }
             }
+            // TOC
 
             // If there is already a MapPoint replace otherwise add new measurement
             if(bestDist<=TH_LOW)
@@ -1503,6 +1525,7 @@ namespace ORB_SLAM3
 
             float bestDist = INT_MAX;
             int bestIdx = -1;
+            // TIC
             for(vector<size_t>::const_iterator vit=vIndices.begin(); vit!=vIndices.end(); vit++)
             {
                 const size_t idx = *vit;
@@ -1521,6 +1544,7 @@ namespace ORB_SLAM3
                     bestIdx = idx;
                 }
             }
+            // TOC
 
             // If there is already a MapPoint replace otherwise add new measurement
             if(bestDist<=TH_LOW)
@@ -1545,6 +1569,7 @@ namespace ORB_SLAM3
 
     int ORBmatcher::SearchBySim3(KeyFrame* pKF1, KeyFrame* pKF2, std::vector<MapPoint *> &vpMatches12, const Sophus::Sim3f &S12, const float th)
     {
+        
         // DBG_PRINTF("%s \n", __PRETTY_FUNCTION__);
         const float &fx = pKF1->fx;
         const float &fy = pKF1->fy;
@@ -1636,6 +1661,7 @@ namespace ORB_SLAM3
 
             float bestDist = INT_MAX;
             int bestIdx = -1;
+            // TIC
             for(vector<size_t>::const_iterator vit=vIndices.begin(), vend=vIndices.end(); vit!=vend; vit++)
             {
                 const size_t idx = *vit;
@@ -1655,6 +1681,7 @@ namespace ORB_SLAM3
                     bestIdx = idx;
                 }
             }
+            // TOC
 
             if(bestDist<=TH_HIGH)
             {
@@ -1716,6 +1743,7 @@ namespace ORB_SLAM3
 
             float bestDist = INT_MAX;
             int bestIdx = -1;
+            // TIC
             for(vector<size_t>::const_iterator vit=vIndices.begin(), vend=vIndices.end(); vit!=vend; vit++)
             {
                 const size_t idx = *vit;
@@ -1740,6 +1768,7 @@ namespace ORB_SLAM3
             {
                 vnMatch2[i2]=bestIdx;
             }
+            // TOC
         }
 
         // Check agreement
@@ -1769,6 +1798,9 @@ namespace ORB_SLAM3
     {
         //DBG_PRINTF("%s \n", __PRETTY_FUNCTION__);
         int nmatches = 0;
+
+        // std::cout << "currentframe desc size: " << CurrentFrame.mDescriptors.rows << " " << CurrentFrame.mDescriptors.cols <<", LastFrame desc size: " 
+                    // << LastFrame.mDescriptors.rows << " "<< LastFrame.mDescriptors.cols << std::endl;
 
         // Rotation Histogram (to check rotation consistency)
         vector<int> rotHist[HISTO_LENGTH];
@@ -1825,6 +1857,8 @@ namespace ORB_SLAM3
                     else
                         vIndices2 = CurrentFrame.GetFeaturesInArea(uv(0),uv(1), radius, nLastOctave-1, nLastOctave+1);
 
+                    // printf("%s num points to match: %lu \n", __PRETTY_FUNCTION__, vIndices2.size());
+
                     if(vIndices2.empty())
                         continue;
 
@@ -1832,7 +1866,8 @@ namespace ORB_SLAM3
 
                     float bestDist = 256;
                     int bestIdx2 = -1;
-
+                    
+                    // TIC
                     for(vector<size_t>::const_iterator vit=vIndices2.begin(), vend=vIndices2.end(); vit!=vend; vit++)
                     {
                         const size_t i2 = *vit;
@@ -1859,6 +1894,7 @@ namespace ORB_SLAM3
                             bestIdx2=i2;
                         }
                     }
+                    // TOC
 
                     if(bestDist<=TH_HIGH)
                     {
@@ -1908,7 +1944,7 @@ namespace ORB_SLAM3
 
                         float bestDist = 256;
                         int bestIdx2 = -1;
-
+                        // TIC
                         for(vector<size_t>::const_iterator vit=vIndices2.begin(), vend=vIndices2.end(); vit!=vend; vit++)
                         {
                             const size_t i2 = *vit;
@@ -1926,6 +1962,7 @@ namespace ORB_SLAM3
                                 bestIdx2=i2;
                             }
                         }
+                        // TOC
 
                         if(bestDist<=TH_HIGH)
                         {
@@ -1953,6 +1990,8 @@ namespace ORB_SLAM3
                         }
 
                     }
+                    // TOC
+                
                 }
             }
         }
@@ -2000,6 +2039,7 @@ namespace ORB_SLAM3
 
         const vector<MapPoint*> vpMPs = pKF->GetMapPointMatches();
 
+        // TIC
         for(size_t i=0, iend=vpMPs.size(); i<iend; i++)
         {
             MapPoint* pMP = vpMPs[i];
@@ -2052,7 +2092,6 @@ namespace ORB_SLAM3
                             continue;
 
                         const cv::Mat &d = CurrentFrame.mDescriptors.row(i2);
-
                         const float dist = DescriptorDistance(dMP,d);
 
                         if(dist<bestDist)
@@ -2106,6 +2145,7 @@ namespace ORB_SLAM3
             }
         }
 #endif
+        // TOC
         DBG_PRINTF("Returned nmatches: %d \n", nmatches);
         return nmatches;
     }
@@ -2158,6 +2198,7 @@ namespace ORB_SLAM3
 // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
     float ORBmatcher::DescriptorDistance(const cv::Mat &a, const cv::Mat &b)
     {
+        
         //DBG_PRINTF("%s \n", __PRETTY_FUNCTION__);
 #ifdef USE_BINARY_DESCRIPTORS 
     
@@ -2175,10 +2216,11 @@ namespace ORB_SLAM3
         }
         return (float)dist;
 #else
-
-        float dist = (float)cv::norm(a, b, cv::NORM_L2);
-        // DBG_PRINTF("%s, distance evaluated: %f \n", __PRETTY_FUNCTION__, dist);
-        return dist;
+        // TIC
+            float dist = (float)cv::norm(a, b, cv::NORM_L2);
+            // DBG_PRINTF("%s, distance evaluated: %f \n", __PRETTY_FUNCTION__, dist);
+        // TOC
+            return dist;
 
 #endif
         

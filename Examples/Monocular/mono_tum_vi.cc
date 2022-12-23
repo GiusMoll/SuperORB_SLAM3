@@ -109,6 +109,9 @@ int main(int argc, char **argv)
             // Read image from file
             im = cv::imread(vstrImageFilenames[seq][ni],cv::IMREAD_GRAYSCALE); //,cv::IMREAD_GRAYSCALE);
 
+            // BLUR IMAGE
+            // cv::blur(im, im, cv::Size(15, 15));
+
             if(imageScale != 1.f)
             {
 #ifdef REGISTER_TIMES

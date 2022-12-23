@@ -422,7 +422,7 @@ void Frame::ExtractORB(int flag, const cv::Mat &im, const int x0, const int x1)
     {
         monoLeft = (*mpORBextractorLeft)(im,cv::Mat(),mvKeys,mDescriptors,vLapping);
         // cout << "desc size: " << mDescriptors.rows << ' ' << mDescriptors.cols << endl;
-        // cout << "mvKeys size: " << mvKeys.size() << endl;
+        // cout << "ExtractORB mvKeys size: " << mvKeys.size() << endl;
     }
     else
         monoRight = (*mpORBextractorRight)(im,cv::Mat(),mvKeysRight,mDescriptorsRight,vLapping);

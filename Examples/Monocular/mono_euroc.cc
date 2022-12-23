@@ -99,6 +99,10 @@ int main(int argc, char **argv)
             // Read image from file
             // cout << vstrImageFilenames[seq][ni] << endl;
             im = cv::imread(vstrImageFilenames[seq][ni],cv::IMREAD_UNCHANGED); //,CV_LOAD_IMAGE_UNCHANGED);
+
+            // BLUR IMAGE
+            // cv::blur(im, im, cv::Size(15, 15));
+
             // im = cv::imread("/home/giuseppe/Dataset/mav0/cam0/data/1403636579813555456.png"  ,cv::IMREAD_UNCHANGED); //,CV_LOAD_IMAGE_UNCHANGED);
             double tframe = vTimestampsCam[seq][ni];
 

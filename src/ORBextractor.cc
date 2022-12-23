@@ -58,6 +58,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <vector>
 #include <iostream>
+#include <unistd.h>
 
 #include "ORBextractor.h"
 
@@ -518,7 +519,7 @@ namespace ORB_SLAM3
 
         mnFeaturesPerLevel.resize(nlevels);
         float factor = 1.0f / scaleFactor;
-        float nDesiredFeaturesPerScale = nfeatures*(1 - factor)/(1 - (float)pow((double)factor, (double)nlevels));
+        float nDesiredFeaturesPerScale = nfeatures; //*(1 - factor)/(1 - (float)pow((double)factor, (double)nlevels));
 
         int sumFeatures = 0;
         for( int level = 0; level < nlevels-1; level++ )
@@ -843,7 +844,7 @@ namespace ORB_SLAM3
         return vResultKeys;
     }
 
-// #define WITH_TICTOC
+#define WITH_TICTOC
 #include <tictoc.hpp>
 // #define ENABLE_SUBBLOCKS_KEY_EXTRACTION
 
@@ -982,7 +983,7 @@ namespace ORB_SLAM3
 
         DBG_PRINTF("%s\n", __PRETTY_FUNCTION__);
 
-        TIC
+        // TIC
 
         vector<cv::KeyPoint> vToDistributeKeys;
         vToDistributeKeys.reserve(nfeatures*10);
@@ -992,7 +993,9 @@ namespace ORB_SLAM3
 
             // SuperPointSLAM::SPDetector detector(model_SP);
             // detector.detect(mvImagePyramid[level], false);
+            TIC
             this->model->detect(mvImagePyramid[level], true);
+            TOC
 
 #ifdef ENABLE_SUBBLOCKS_KEY_EXTRACTION
 
@@ -1073,7 +1076,16 @@ namespace ORB_SLAM3
 
             vToDistributeKeys.clear();
 
-            int num_kpts = 900;
+            //printf("%s %d\n",__PRETTY_FUNCTION__, nfeatures);
+            int num_kpts = 0;
+            if(nfeatures < 3000)
+            {
+                num_kpts = nfeatures;
+            }
+            else
+            {
+                num_kpts = nfeatures/5;
+            }
 
             TOC
             
@@ -1146,7 +1158,7 @@ namespace ORB_SLAM3
         // for (int level = 0; level < nlevels; ++level)
         //     computeOrientation(mvImagePyramid[level], allKeypoints[level], umax);
 
-        TOC
+        
 
 #endif  
 
@@ -1496,7 +1508,14 @@ namespace ORB_SLAM3
         // Mat desc = cv::Mat(nkeypointsLevel, 32, CV_8U);
         ComputeKeyPointsOctTree(allKeypoints, descriptors);
         //cout << descriptors.rows << endl;
-        DBG_PRINTF("descriptors size: %d, %d \n", descriptors.rows, descriptors.cols);
+        // printf("descriptors size: %d, %d; allKeypoints size: %lu, %lu, %lu, %lu, %lu, %lu, %lu, %lu\n", descriptors.rows, descriptors.cols,allKeypoints[0].size()
+        //                                                                                                                 , descriptors.cols,allKeypoints[1].size()
+        //                                                                                                                 , descriptors.cols,allKeypoints[2].size()
+        //                                                                                                                 , descriptors.cols,allKeypoints[3].size()
+        //                                                                                                                 , descriptors.cols,allKeypoints[4].size()
+        //                                                                                                                 , descriptors.cols,allKeypoints[5].size()
+        //                                                                                                                 , descriptors.cols,allKeypoints[6].size()
+        //                                                                                                                 , descriptors.cols,allKeypoints[7].size());
 
         int nkeypoints = 0;
         for (int level = 0; level < nlevels; ++level)

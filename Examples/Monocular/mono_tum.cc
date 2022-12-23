@@ -52,6 +52,7 @@ int main(int argc, char **argv)
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
+    
     vTimesTrack.resize(nImages);
 
     cout << endl << "-------" << endl;
@@ -67,6 +68,10 @@ int main(int argc, char **argv)
     {
         // Read image from file
         im = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_UNCHANGED); //,cv::IMREAD_UNCHANGED);
+
+        // BLUR IMAGE
+        cv::blur(im, im, cv::Size(15, 15));
+
         double tframe = vTimestamps[ni];
 
         if(im.empty())

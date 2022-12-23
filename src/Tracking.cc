@@ -16,6 +16,8 @@
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define WITH_TICTOC
+#include "tictoc.hpp"
 
 #include "Tracking.h"
 
@@ -1822,6 +1824,14 @@ void Tracking::ResetFrameIMU()
 void Tracking::Track()
 {
 
+    ////////////////////////////////////////////
+    // CHECK AND SAVE TO FILE GPU STATS       //
+    // torch::cuda::memory_stats(device=None) //
+    ////////////////////////////////////////////
+
+    printf("\n\n\n INIT TRACKING PIPELINE -------------------- \n");
+    TIC
+
     if (bStepByStep)
     {
         std::cout << "Tracking: Waiting to the next step" << std::endl;
@@ -1838,11 +1848,14 @@ void Tracking::Track()
     }
 
     Map* pCurrentMap = mpAtlas->GetCurrentMap();
+    // TOC
+    // TIC
     if(!pCurrentMap)
     {
         cout << "ERROR: There is not an active map in the atlas" << endl;
     }
-
+    // TOC
+    // TIC
     if(mState!=NO_IMAGES_YET)
     {
         if(mLastFrame.mTimeStamp>mCurrentFrame.mTimeStamp)
@@ -1883,7 +1896,9 @@ void Tracking::Track()
         }
     }
 
+    // TOC
 
+    // TIC
     if ((mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD) && mpLastKeyFrame)
         mCurrentFrame.SetNewBias(mpLastKeyFrame->GetImuBias());
 
@@ -1923,6 +1938,7 @@ void Tracking::Track()
         mbMapUpdated = true;
     }
 
+    // TOC
 
     if(mState==NOT_INITIALIZED)
     {
@@ -1957,6 +1973,8 @@ void Tracking::Track()
         std::chrono::steady_clock::time_point time_StartPosePred = std::chrono::steady_clock::now();
 #endif
 
+// TIC
+
         // Initial camera pose estimation using motion model or relocalization (if tracking is lost)
         if(!mbOnlyTracking)
         {
@@ -1972,13 +1990,13 @@ void Tracking::Track()
 
                 if((!mbVelocity && !pCurrentMap->isImuInitialized()) || mCurrentFrame.mnId<mnLastRelocFrameId+2)
                 {
-                    std::cout << "TRACK: Track with respect to the reference KF " << std::endl;
+                    // std::cout << "TRACK: Track with respect to the reference KF " << std::endl;
                     Verbose::PrintMess("TRACK: Track with respect to the reference KF ", Verbose::VERBOSITY_DEBUG);
                     bOK = TrackReferenceKeyFrame();
                 }
                 else
                 {
-                    std::cout << "TRACK: Track with motion model" << std::endl;
+                    // std::cout << "TRACK: Track with motion model" << std::endl;
                     Verbose::PrintMess("TRACK: Track with motion model", Verbose::VERBOSITY_DEBUG);
                     bOK = TrackWithMotionModel();
                     if(!bOK)
@@ -2140,6 +2158,8 @@ void Tracking::Track()
         if(!mCurrentFrame.mpReferenceKF)
             mCurrentFrame.mpReferenceKF = mpReferenceKF;
 
+
+// TOC
 #ifdef REGISTER_TIMES
         std::chrono::steady_clock::time_point time_EndPosePred = std::chrono::steady_clock::now();
 
@@ -2147,7 +2167,7 @@ void Tracking::Track()
         vdPosePred_ms.push_back(timePosePred);
 #endif
 
-
+// TIC
 #ifdef REGISTER_TIMES
         std::chrono::steady_clock::time_point time_StartLMTrack = std::chrono::steady_clock::now();
 #endif
@@ -2361,6 +2381,10 @@ void Tracking::Track()
         }
     }
 #endif
+
+    TOC
+    printf("\n INIT TRACKING PIPELINE -------------------- \n\n\n");
+
 }
 
 

@@ -67,6 +67,17 @@ int main(int argc, char **argv)
     {
         // Read image from file
         im = cv::imread(vstrImageFilenames[ni],cv::IMREAD_UNCHANGED); //,cv::IMREAD_UNCHANGED);
+
+        // Sharpening image
+        // cv::Mat frame;
+        // cv::GaussianBlur(im, frame, cv::Size(0, 0), 3);
+        // cv::addWeighted(im, 1.5, frame, -0.5, 0, frame);
+        // im = frame;
+
+        // Blurring image
+        // cv::GaussianBlur(im, im, cv::Size(10, 10), 0);
+        cv::blur(im, im, cv::Size(15, 15));
+
         double tframe = vTimestamps[ni];
 
         if(im.empty())
@@ -148,7 +159,10 @@ int main(int argc, char **argv)
     cout << "mean tracking time: " << totaltime/nImages << endl;
 
     // Save camera trajectory
-    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");    
+    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt"); 
+       
+    SLAM.SaveTrajectoryEuRoC("CameraTrajectory.txt");
+    // SLAM.SaveKeyFrameTrajectoryEuRoC("KeyFrameTrajectory.txt");
 
     return 0;
 }
@@ -172,7 +186,7 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageFilena
         }
     }
 
-    string strPrefixLeft = strPathToSequence + "/image_0/";
+    string strPrefixLeft = strPathToSequence + "/image_2/";
 
     const int nTimes = vTimestamps.size();
     vstrImageFilenames.resize(nTimes);

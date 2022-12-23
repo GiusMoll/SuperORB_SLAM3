@@ -13,7 +13,7 @@ const bool SP_USE_CUDA = false;
 // #define USE_DBOW2
 // #define USE_BINARY_DESCRIPTORS 
 #define DBOW_LEVELS 0
-// #define ENABLE_SUBBLOCKS_KEY_EXTRACTION
+#define ENABLE_SUBBLOCKS_KEY_EXTRACTION
 
 #endif
 

@@ -448,7 +448,7 @@ Sophus::SE3f System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const
     return Tcw;
 }
 
-// #define WITH_TICTOC
+#define WITH_TICTOC
 #include <tictoc.hpp>
 
 Sophus::SE3f System::TrackMonocular(const cv::Mat &im, const double &timestamp, const vector<IMU::Point>& vImuMeas, string filename)
@@ -738,7 +738,7 @@ void System::SaveTrajectoryEuRoC(const string &filename)
 
     vector<Map*> vpMaps = mpAtlas->GetAllMaps();
     int numMaxKFs = 0;
-    Map* pBiggerMap;
+    Map* pBiggerMap = nullptr;
     std::cout << "There are " << std::to_string(vpMaps.size()) << " maps in the atlas" << std::endl;
     for(Map* pMap :vpMaps)
     {
@@ -750,6 +750,8 @@ void System::SaveTrajectoryEuRoC(const string &filename)
         }
     }
 
+    if(pBiggerMap != nullptr)
+    {
     vector<KeyFrame*> vpKFs = pBiggerMap->GetAllKeyFrames();
     sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
 
@@ -841,6 +843,11 @@ void System::SaveTrajectoryEuRoC(const string &filename)
     //cout << "end saving trajectory" << endl;
     f.close();
     cout << endl << "End of saving trajectory to " << filename << " ..." << endl;
+    }
+    else
+    {
+        cout << endl << "No trajectory to save... BYE!" << endl;
+    }
 }
 
 void System::SaveTrajectoryEuRoC(const string &filename, Map* pMap)

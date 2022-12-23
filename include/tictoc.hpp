@@ -5,9 +5,13 @@
 
 #include <sys/time.h>
 #include <stdio.h>
-
+//#include <cstdlib>
+#include <iostream>
+#include <fstream>
 #include <string>
 #include <map>
+
+using namespace std;
 
 namespace {
 
@@ -42,16 +46,27 @@ public:
         this->tic_time_.line = line;
         this->tic_time_.time = time;
     };
+
     void toc(line_id line, struct timeval time) {
         if (this->display_ && tic_time_.line >= 0) {
+            // ofstream statsfile;
+            // statsfile.open("time_stats.txt",std::fstream::in | std::fstream::out | std::fstream::app);
+            // statsfile
+            //           << this->filename_.c_str() 
+            //           << " [" << tic_time_.line << "," << line 
+            //           << "]  elapsed: " << ((time.tv_sec - tic_time_.time.tv_sec) + (time.tv_usec - tic_time_.time.tv_usec) / 1000000.0) << " s   "
+            //           << ((time.tv_sec - tic_time_.time.tv_sec) * 1000. +  (time.tv_usec - tic_time_.time.tv_usec) / 1000.0) << " ms   "
+            //           << ((time.tv_sec - tic_time_.time.tv_sec) * 1000000 + time.tv_usec - tic_time_.time.tv_usec) << " us\n";
             printf("%s [%5d,%5d]   elapsed: %10.3f s  %10.3f ms  %10d us\n",
                 this->filename_.c_str(), tic_time_.line , line,
                 ((time.tv_sec - tic_time_.time.tv_sec) + (time.tv_usec - tic_time_.time.tv_usec) / 1000000.0),
                 ((time.tv_sec - tic_time_.time.tv_sec) * 1000. +  (time.tv_usec - tic_time_.time.tv_usec) / 1000.0),
                 ((time.tv_sec - tic_time_.time.tv_sec) * 1000000 + time.tv_usec - tic_time_.time.tv_usec)
             );
+            // statsfile.close();
         }
     };
+
     void tictoc(line_id line, struct timeval time) {
         this->toc(line, time);
         this->tic(line, time);
@@ -65,6 +80,9 @@ public:
     bool display_;
     int max_hist_length_;
     timestamp tic_time_;
+
+private:
+    // std::ofstream statsfile;
 };
 
 
