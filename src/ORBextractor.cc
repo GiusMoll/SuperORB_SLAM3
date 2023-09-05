@@ -74,6 +74,14 @@ using namespace std;
 #define DBG_PRINTF(...)
 #endif
 
+#ifndef WEIGHTS_PATH 
+    #define WEIGHTS_PATH "/Weights/superpoint.pt"
+#endif
+
+#define WITH_TICTOC
+#include <tictoc.hpp>
+// #define ENABLE_SUBBLOCKS_KEY_EXTRACTION
+
 namespace ORB_SLAM3
 {
 
@@ -481,21 +489,18 @@ namespace ORB_SLAM3
 
 #else
 
-        std::cout << "Initializing Superpoint detector... \n" ;
-        this->weight_dir = "/home/ubuntu/SuperORB_SLAM3/Weights/superpoint.pt";
-        // this->model = new SuperPointSLAM::SPDetector(this->weight_dir, SP_USE_CUDA);
+        std::cout << "Initializing Superpoint detector... " << std::endl;
 
-        ////////////////TEST/////////////////////
-        this->model = new SuperPointSLAM::SPDetector(this->weight_dir, true);
-        ////////////////////////////////////////
+        this->weight_dir = WEIGHTS_PATH;
 
-        // model_SP = make_shared<SuperPointSLAM::SuperPoint>();
-        // torch::load(model_SP, this->weight_dir);
+        //////////////// INit Superpoint detector ////////////////
+        this->model = new SuperPointSLAM::SPDetector(WEIGHTS_PATH, true);
+
         if(torch::cuda::is_available())
        {
-        std::cout << " Running with CUDA!!!" << std::endl;
+        std::cout << " Running superpoint processing with CUDA" << std::endl;
        }
-        std::cout << " ...COMPLETED!!!" << std::endl;
+        std::cout << " ...superpoint detector initialization COMPLETED!" << std::endl;
 
         mvScaleFactor.resize(nlevels);
         mvLevelSigma2.resize(nlevels);
@@ -519,6 +524,7 @@ namespace ORB_SLAM3
 
         mnFeaturesPerLevel.resize(nlevels);
         float factor = 1.0f / scaleFactor;
+        // Get exactly nfeatures as specified from config file for each piramidal scale level
         float nDesiredFeaturesPerScale = nfeatures; //*(1 - factor)/(1 - (float)pow((double)factor, (double)nlevels));
 
         int sumFeatures = 0;
@@ -844,11 +850,6 @@ namespace ORB_SLAM3
         return vResultKeys;
     }
 
-#define WITH_TICTOC
-#include <tictoc.hpp>
-// #define ENABLE_SUBBLOCKS_KEY_EXTRACTION
-
-
 #ifdef USE_ORBFEATURES
     void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoints)
     {
@@ -1034,21 +1035,12 @@ namespace ORB_SLAM3
                     if(maxX>maxBorderX)
                         maxX = maxBorderX;
 
-                    // std::cout << "iniThFAST: " << iniThFAST << "minThFAST: " << minThFAST << std::endl;
                     vector<cv::KeyPoint> vKeysCell;
-                    // FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                    //      vKeysCell,iniThFAST,true);
                     this->model->getKeyPoints(iniThFAST, iniX, maxX, iniY, maxY, vKeysCell, true);
-                    // detector.getKeyPoints(iniThFAST, iniX, maxX, iniY, maxY, vKeysCell, true);
-                    // DBG_PRINTF("vKeysCell size: %lu", vKeysCell.size());
-
 
                     if(vKeysCell.empty())
                     {
-                        // FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                        //      vKeysCell,minThFAST,true);
                         this->model->getKeyPoints(minThFAST, iniX, maxX, iniY, maxY, vKeysCell, true);                        
-                        // detector.getKeyPoints(minThFAST, iniX, maxX, iniY, maxY, vKeysCell, true);
                     }
 
                     if(!vKeysCell.empty())

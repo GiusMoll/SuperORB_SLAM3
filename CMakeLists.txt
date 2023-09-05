@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 2.8)
 project(ORB_SLAM3)
 
+# Get cuDNN version
+message('${CUDNN_INCLUDE_PATH}')
+
+if(EXISTS ${CUDNN_INCLUDE_PATH}/cudnn_version.h)
+        file(READ ${CUDNN_INCLUDE_PATH}/cudnn_version.h CUDNN_HEADER_CONTENTS)
+else()
+        file(READ ${CUDNN_INCLUDE_PATH}/cudnn.h CUDNN_HEADER_CONTENTS)
+endif()
+
 ### LIBTORCH
 #set(Torch_DIR "/home/ubuntu/pytorch_master/pytorch/torch/share/cmake/Torch")  # libtorch
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/libtorch/")
@@ -134,6 +143,12 @@ include/SPDetector.hpp
 include/SuperPoint.hpp)
 
 add_subdirectory(Thirdparty/g2o)
+
+if(DEFINED SUPERPOINT_WEIGHTS_PATH)
+    message("Macro SUPERPOINT_WEIGHTS_PATH is defined with value: ${SUPERPOINT_WEIGHTS_PATH}")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE WEIGHTS_PATH="${SUPERPOINT_WEIGHTS_PATH}")
+endif()
+
 
 target_link_libraries(${PROJECT_NAME}
 ${OpenCV_LIBS}
