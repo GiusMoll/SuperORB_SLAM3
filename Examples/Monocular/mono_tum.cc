@@ -70,7 +70,7 @@ int main(int argc, char **argv)
         im = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_UNCHANGED); //,cv::IMREAD_UNCHANGED);
 
         // BLUR IMAGE
-        cv::blur(im, im, cv::Size(15, 15));
+        // cv::blur(im, im, cv::Size(15, 15));
 
         double tframe = vTimestamps[ni];
 

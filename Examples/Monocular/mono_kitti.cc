@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 
         // Blurring image
         // cv::GaussianBlur(im, im, cv::Size(10, 10), 0);
-        cv::blur(im, im, cv::Size(15, 15));
+        // cv::blur(im, im, cv::Size(15, 15));
 
         double tframe = vTimestamps[ni];
 
